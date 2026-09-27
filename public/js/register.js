@@ -967,7 +967,7 @@ form.addEventListener(
                   <strong>Revisa tu bandeja de correo</strong>
                 </div>
                 <p>Busca también en <strong>spam, no deseados o promociones</strong>.</p>
-                <p><strong>En iPhone:</strong> si llega a spam, muévelo primero a la bandeja principal y marca <strong>“No es spam”</strong> antes de abrirlo; así el botón de confirmación será interactivo.</p>
+                <p><strong>En iOS:</strong> si llega a spam, muévelo primero a la bandeja principal y marca <strong>“No es spam”</strong> antes de abrirlo; así el botón de confirmación será interactivo.</p>
               </div>
             `,
             confirmButtonText: 'Entendido',
@@ -1051,7 +1051,7 @@ form.addEventListener(
             <strong>Revisa tu bandeja de correo</strong>
           </div>
           <p>Busca también en <strong>spam, no deseados o promociones</strong>.</p>
-          <p><strong>En iPhone:</strong> si llega a spam, muévelo primero a la bandeja principal y marca <strong>“No es spam”</strong> antes de abrirlo; así el botón de confirmación será interactivo.</p>
+          <p><strong>En iOS:</strong> si llega a spam, muévelo primero a la bandeja principal y marca <strong>“No es spam”</strong> antes de abrirlo; así el botón de confirmación será interactivo.</p>
         </div>
       `,
 
