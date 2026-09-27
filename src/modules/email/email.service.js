@@ -94,7 +94,7 @@ class EmailService {
             ">
               <p style="margin:0 0 7px;font-weight:bold;">Revisa tu bandeja de correo</p>
               <p style="margin:0 0 7px;color:#6B6265;text-align:justify;line-height:1.65;">Busca también en <strong>spam, no deseados o promociones</strong>.</p>
-              <p style="margin:0;color:#6B6265;text-align:justify;line-height:1.65;"><strong>Si usas iPhone:</strong> si el mensaje llega a spam, muévelo primero a la bandeja principal y marca <strong>“No es spam”</strong> antes de abrirlo. Así el botón de confirmación estará disponible.</p>
+              <p style="margin:0;color:#6B6265;text-align:justify;line-height:1.65;"><strong>Si usas iOS:</strong> si el mensaje llega a spam, muévelo primero a la bandeja principal y marca <strong>“No es spam”</strong> antes de abrirlo. Así el botón de confirmación estará disponible.</p>
             </div>
 
           </div>
