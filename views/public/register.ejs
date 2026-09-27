@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Registro oficial para Voces que Corren.">
+  <title><%= title %></title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/app.css">
+  <% if (turnstileSiteKey) { %>
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" defer></script>
+  <% } %>
+</head>
+
+<body class="min-h-screen bg-marfil text-texto antialiased">
+  <header class="sticky top-0 z-50 border-b border-linea/80 bg-marfil/90 backdrop-blur-xl">
+    <div class="mx-auto flex h-20 max-w-7xl items-center justify-between px-6 lg:px-8">
+      <a
+        href="/"
+        class="
+          flex
+          items-center
+        "
+      >
+
+        <div>
+          <p
+            class="
+              text-[11px]
+              font-bold
+              uppercase
+              tracking-[0.14em]
+              text-naranja
+            "
+          >
+            Segunda Carrera Atlética
+          </p>
+
+          <p
+            class="
+              mt-0.5
+              text-base
+              font-extrabold
+              tracking-tight
+              text-guinda-dark
+              sm:text-lg
+            "
+          >
+            “Voces que Corren” 5 km
+          </p>
+
+          <p
+            class="
+              mt-0.5
+              text-xs
+              font-medium
+              text-texto-soft
+            "
+          >
+            Por una vida libre de violencia
+          </p>
+
+        </div>
+
+      </a>
+
+      <a href="/" class="rounded-xl px-4 py-2 text-sm font-semibold text-guinda transition hover:bg-guinda/5">← Volver</a>
+    </div>
+  </header>
+
+  <main class="mx-auto grid max-w-7xl gap-12 px-6 py-10 lg:grid-cols-[320px_1fr] lg:px-8 lg:py-14">
+    <aside>
+      <div class="lg:sticky lg:top-28">
+        <span class="inline-flex items-center gap-2 rounded-full border border-white/40 bg-white/25 px-4 py-2 text-xs font-semibold text-guinda-dark shadow-lg shadow-guinda/10 ring-1 ring-white/30 backdrop-blur-xl">
+          <span class="h-2 w-2 rounded-full bg-naranja shadow-sm shadow-naranja/50"></span>
+          25 N
+        </span>
+
+        <h1 class="mt-6 text-3xl font-extrabold tracking-[-0.04em] text-guinda-dark">Tu registro comienza aquí.</h1>
+        <p class="mt-4 text-justify text-sm leading-6 text-texto-soft">
+          Completa únicamente la información necesaria. Al finalizar te enviaremos un correo para confirmar tu inscripción y posteriormente asignarte un folio.
+        </p>
+
+        <div class="mt-10 space-y-5" id="stepsIndicator">
+          <% const stepData = [
+            ['Datos personales', 'Identificación básica'],
+            ['Procedencia y contacto', 'Ubicación y comunicación'],
+            ['Carrera y emergencia', 'Datos para el evento'],
+            ['Consentimientos', 'Revisión y aceptación']
+          ]; %>
+
+          <% stepData.forEach((item, index) => { %>
+            <div class="step-item flex items-start gap-4 <%= index === 0 ? '' : 'opacity-50' %>" data-step-indicator="<%= index + 1 %>">
+              <div class="step-circle flex h-9 w-9 shrink-0 items-center justify-center rounded-xl <%= index === 0 ? 'bg-guinda text-white' : 'border border-linea bg-white text-texto-soft' %> text-sm font-bold transition">
+                <span class="step-circle-content"><%= index + 1 %></span>
+              </div>
+              <div>
+                <strong class="block text-sm text-guinda-dark"><%= item[0] %></strong>
+                <span class="text-xs text-texto-soft"><%= item[1] %></span>
+              </div>
+            </div>
+          <% }); %>
+        </div>
+      </div>
+    </aside>
+
+    <section>
+      <div class="overflow-hidden rounded-[2rem] border border-linea bg-white shadow-xl shadow-guinda/5">
+        <div class="flex items-center justify-between border-b border-linea px-7 py-6 sm:px-9">
+          <div>
+            <p id="stepLabel" class="text-xs font-bold uppercase tracking-[0.15em] text-dorado">Paso 1 de 4</p>
+            <h2 id="stepTitle" class="mt-2 text-2xl font-bold tracking-tight text-guinda-dark">Datos personales</h2>
+          </div>
+          <div
+            class="hidden min-w-[9.5rem] rounded-2xl border border-dorado-soft/50 bg-gradient-to-br from-white/90 via-white/70 to-dorado-pale/60 px-4 py-2.5 shadow-sm shadow-dorado/15 backdrop-blur-xl sm:block"
+            aria-label="Cupo total del evento"
+          >
+            <div class="flex items-center justify-between gap-3">
+              <span class="text-[10px] font-bold uppercase tracking-[0.16em] text-texto-soft">Cupo total</span>
+              <span class="h-2 w-2 rounded-full bg-dorado shadow-sm shadow-dorado/50" aria-hidden="true"></span>
+            </div>
+            <div class="mt-1 flex items-baseline gap-1.5">
+              <strong class="text-xl font-extrabold tracking-tight text-guinda-dark"><%= capacity.toLocaleString('es-MX') %></strong>
+              <span class="text-[11px] font-medium text-texto-soft">lugares</span>
+            </div>
+          </div>
+        </div>
+
+        <form id="registrationForm" novalidate>
+          <!-- PASO 1 -->
+          <div class="form-step p-7 sm:p-9" data-step="1">
+            <div class="grid gap-6 md:grid-cols-2">
+              <div class="md:col-span-2">
+                <p class="mb-4 text-sm leading-6 text-texto-soft">Escribe tus datos como aparecen en tus documentos de identificación.</p>
+              </div>
+
+              <div class="md:col-span-2">
+                <label for="nombres" class="mb-2 block text-sm font-semibold text-guinda-dark">Nombre(s)</label>
+                <input id="nombres" name="nombres" type="text" autocomplete="given-name" placeholder="Ej. Eileen Sofia" required
+                  class="w-full rounded-2xl border border-linea bg-marfil/50 px-4 py-3.5 text-sm outline-none transition placeholder:text-texto-soft/60 focus:border-guinda focus:bg-white focus:ring-4 focus:ring-guinda/5">
+              </div>
+
+              <div>
+                <label for="apellidoPaterno" class="mb-2 block text-sm font-semibold text-guinda-dark">Apellido paterno</label>
+                <input id="apellidoPaterno" name="apellidoPaterno" type="text" autocomplete="family-name" placeholder="Ej. Vicencio" required data-surname="paterno"
+                  class="w-full rounded-2xl border border-linea bg-marfil/50 px-4 py-3.5 text-sm outline-none transition placeholder:text-texto-soft/60 focus:border-guinda focus:bg-white focus:ring-4 focus:ring-guinda/5">
+                <p class="mt-2 text-xs text-texto-soft">Si no cuentas con este apellido, podrás registrarlo con <strong>X</strong>.</p>
+              </div>
+
+              <div>
+                <label for="apellidoMaterno" class="mb-2 block text-sm font-semibold text-guinda-dark">Apellido materno</label>
+                <input id="apellidoMaterno" name="apellidoMaterno" type="text" placeholder="Ej. Trujillo" required data-surname="materno"
+                  class="w-full rounded-2xl border border-linea bg-marfil/50 px-4 py-3.5 text-sm outline-none transition placeholder:text-texto-soft/60 focus:border-guinda focus:bg-white focus:ring-4 focus:ring-guinda/5">
+                <p class="mt-2 text-xs text-texto-soft">Si no cuentas con este apellido, podrás registrarlo con <strong>X</strong>.</p>
+              </div>
+
+              <div>
+                <label for="fechaNacimiento" class="mb-2 block text-sm font-semibold text-guinda-dark">Fecha de nacimiento</label>
+                <input id="fechaNacimiento" name="fechaNacimiento" type="date" required
+                  class="w-full rounded-2xl border border-linea bg-marfil/50 px-4 py-3.5 text-sm outline-none transition focus:border-guinda focus:bg-white focus:ring-4 focus:ring-guinda/5">
+              </div>
+
+              <div>
+                <label for="curp" class="mb-2 block text-sm font-semibold text-guinda-dark">
+                  CURP <span class="font-normal text-texto-soft">(opcional)</span>
+                </label>
+                <input id="curp" name="curp" type="text" maxlength="18" autocomplete="off" placeholder="Ejemplo VITE180105MMCCRLA7"
+                  class="w-full rounded-2xl border border-linea bg-marfil/50 px-4 py-3.5 text-sm uppercase outline-none transition placeholder:text-texto-soft/60 focus:border-guinda focus:bg-white focus:ring-4 focus:ring-guinda/5">
+              </div>
+
+              <fieldset class="md:col-span-2">
+                <legend class="mb-3 block text-sm font-semibold text-guinda-dark">Categoría de competencia <span aria-hidden="true">*</span></legend>
+                <div class="grid gap-3 sm:grid-cols-2">
+
+                  <% const generos = [
+                    ['femenil', 'Femenil'],
+                    ['varonil', 'Varonil'],
+                  ]; %>
+
+                  <% generos.forEach(([value, label]) => { %>
+
+                    <label
+                      class="
+                        gender-card
+                        flex
+                        cursor-pointer
+                        items-center
+                        gap-3
+                        rounded-2xl
+                        border
+                        border-linea
+                        bg-marfil/35
+                        p-4
+                        transition
+                        hover:border-guinda/30
+                        hover:bg-white
+                      "
+                    >
+
+                      <input
+                        type="radio"
+                        name="categoriaCompetencia"
+                        value="<%= value %>"
+                        class="h-4 w-4 accent-guinda"
+                        required
+                      >
+
+                      <span class="text-sm font-medium text-texto">
+                        <%= label %>
+                      </span>
+
+                    </label>
+
+                  <% }); %>
+
+                </div>
+              </fieldset>
+
+              <fieldset class="md:col-span-2">
+                <legend class="mb-3 block text-sm font-semibold text-guinda-dark">¿Te identificas como parte de la comunidad LGBTIQ+? <span class="font-normal text-texto-soft">(opcional)</span></legend>
+                <div class="grid gap-3 sm:grid-cols-3">
+                  <% const opcionesLgbtiq = [
+                    ['si', 'Sí'],
+                    ['no', 'No'],
+                    ['prefiero_no_responder', 'Prefiero no responder']
+                  ]; %>
+                  <% opcionesLgbtiq.forEach(([value, label]) => { %>
+                    <label class="gender-card flex cursor-pointer items-center gap-3 rounded-2xl border border-linea bg-marfil/35 p-4 transition hover:border-guinda/30 hover:bg-white">
+                      <input type="radio" name="identidadLgbtiq" value="<%= value %>" class="h-4 w-4 accent-guinda">
+                      <span class="text-sm font-medium text-texto"><%= label %></span>
+                    </label>
+                  <% }); %>
+                </div>
+                <p class="mt-3 rounded-2xl border border-guinda/10 bg-guinda/5 p-4 text-xs leading-5 text-texto-soft"><strong class="text-guinda-dark">Nota de privacidad:</strong> Esta información es confidencial, completamente opcional y se recopila únicamente con fines estadísticos para medir la diversidad y promover la inclusión en nuestro evento. No afecta en absoluto tu categoría de competencia ni tu cronometraje.</p>
+              </fieldset>
+            </div>
+          </div>
+
+          <!-- PASO 2 -->
+          <div class="form-step hidden p-7 sm:p-9" data-step="2">
+            <div class="grid gap-6 md:grid-cols-2">
+              <div class="md:col-span-2">
+                <label class="mb-3 block text-sm font-semibold text-guinda-dark">¿Vives en el Estado de México?</label>
+                <div class="grid gap-3 sm:grid-cols-2">
+                  <label class="residence-card flex cursor-pointer items-center gap-3 rounded-2xl border border-linea bg-marfil/35 p-4 transition hover:border-guinda/30 hover:bg-white">
+                    <input type="radio" name="esEdomex" value="true" class="h-4 w-4 accent-guinda" required>
+                    <span class="text-sm font-medium">Sí, vivo en el Estado de México</span>
+                  </label>
+                  <label class="residence-card flex cursor-pointer items-center gap-3 rounded-2xl border border-linea bg-marfil/35 p-4 transition hover:border-guinda/30 hover:bg-white">
+                    <input type="radio" name="esEdomex" value="false" class="h-4 w-4 accent-guinda" required>
+                    <span class="text-sm font-medium">No, soy participante foráneo</span>
+                  </label>
+                </div>
+              </div>
+
+              <div
+                id="edomexBlock"
+                class="hidden md:col-span-2"
+              >
+
+                <label
+                  for="municipioId"
+                  class="mb-2 block text-sm font-semibold text-guinda-dark"
+                >
+                  Municipio del Estado de México
+                </label>
+
+                <select
+                  id="municipioId"
+                  name="municipioId"
+                  class="
+                    w-full
+                    rounded-2xl
+                    border
+                    border-linea
+                    bg-marfil/50
+                    px-4
+                    py-3.5
+                    text-sm
+                    outline-none
+                    transition
+                    focus:border-guinda
+                    focus:bg-white
+                    focus:ring-4
+                    focus:ring-guinda/5
+                    disabled:cursor-not-allowed
+                    disabled:opacity-60
+                  "
+                >
+                  <option value="">
+                    Cargando municipios...
+                  </option>
+                </select>
+
+                <p
+                  id="municipioHelp"
+                  class="mt-2 text-xs text-texto-soft"
+                >
+                  Selecciona tu municipio de residencia.
+                </p>
+
+              </div>
+
+              <div id="foraneoBlock" class="hidden md:col-span-2">
+                <div class="grid gap-6 md:grid-cols-2">
+                  <div>
+                    <label for="estadoForaneo" class="mb-2 block text-sm font-semibold text-guinda-dark">Estado</label>
+                    <input id="estadoForaneo" name="estadoForaneo" type="text" maxlength="80" placeholder="Ej. Ciudad de México"
+                      class="w-full rounded-2xl border border-linea bg-marfil/50 px-4 py-3.5 text-sm outline-none transition focus:border-guinda focus:bg-white focus:ring-4 focus:ring-guinda/5">
+                  </div>
+                  <div>
+                    <label for="ciudadForanea" class="mb-2 block text-sm font-semibold text-guinda-dark">Ciudad o municipio</label>
+                    <input id="ciudadForanea" name="ciudadForanea" type="text" maxlength="100" placeholder="Ej. Cuauhtémoc"
+                      class="w-full rounded-2xl border border-linea bg-marfil/50 px-4 py-3.5 text-sm outline-none transition focus:border-guinda focus:bg-white focus:ring-4 focus:ring-guinda/5">
+                  </div>
+                </div>
+              </div>
+
+              <div class="md:col-span-2">
+                <label for="correo" class="mb-2 block text-sm font-semibold text-guinda-dark">Correo electrónico</label>
+                <input id="correo" name="correo" type="email" autocomplete="email" placeholder="nombre@correo.com" required
+                  class="w-full rounded-2xl border border-linea bg-marfil/50 px-4 py-3.5 text-sm outline-none transition placeholder:text-texto-soft/60 focus:border-guinda focus:bg-white focus:ring-4 focus:ring-guinda/5">
+                <div class="mt-3 flex items-start gap-3 rounded-2xl border border-dorado-soft/50 bg-dorado-pale/35 p-4">
+                  <span class="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-guinda text-xs font-bold text-white">!</span>
+                  <p class="text-justify text-xs leading-6 text-texto-soft">
+                    Verifica muy bien este correo. Aquí recibirás el enlace personal para confirmar tu inscripción.
+                    <strong class="text-guinda-dark">Revisa también spam, no deseados o promociones.</strong>
+                    Si usas iPhone y el mensaje llega a spam, muévelo primero a la bandeja principal y marca
+                    <strong class="text-guinda-dark">“No es spam”</strong> antes de abrirlo para activar el botón de confirmación.
+                    <strong class="text-guinda-dark">Sin esa confirmación no se asignará folio.</strong>
+                  </p>
+                </div>
+              </div>
+
+              <div class="md:col-span-2">
+                <label for="telefono" class="mb-2 block text-sm font-semibold text-guinda-dark">Teléfono móvil</label>
+                <input id="telefono" name="telefono" type="tel" inputmode="numeric" maxlength="10" autocomplete="tel" placeholder="10 dígitos" required
+                  class="w-full rounded-2xl border border-linea bg-marfil/50 px-4 py-3.5 text-sm outline-none transition placeholder:text-texto-soft/60 focus:border-guinda focus:bg-white focus:ring-4 focus:ring-guinda/5">
+              </div>
+            </div>
+          </div>
+
+          <!-- PASO 3 -->
+          <div class="form-step hidden p-7 sm:p-9" data-step="3">
+            <div class="grid gap-6 md:grid-cols-2">
+              <div>
+                <label for="talla" class="mb-2 block text-sm font-semibold text-guinda-dark">Talla de playera</label>
+                <select id="talla" name="talla" required
+                  class="w-full rounded-2xl border border-linea bg-marfil/50 px-4 py-3.5 text-sm outline-none transition focus:border-guinda focus:bg-white focus:ring-4 focus:ring-guinda/5">
+                  <option value="">Selecciona talla</option>
+                  <option value="CH">CH</option>
+                  <option value="M">M</option>
+                  <option value="G">G</option>
+                  <option value="XG">XG</option>
+                </select>
+              </div>
+
+              <div>
+                <label for="tipoSangre" class="mb-2 block text-sm font-semibold text-guinda-dark">
+                  Tipo de sangre <span class="font-normal text-texto-soft">(opcional)</span>
+                </label>
+                <select id="tipoSangre" name="tipoSangre"
+                  class="w-full rounded-2xl border border-linea bg-marfil/50 px-4 py-3.5 text-sm outline-none transition focus:border-guinda focus:bg-white focus:ring-4 focus:ring-guinda/5">
+                  <option value="">No especificar</option>
+                  <option value="A+">A+</option><option value="A-">A-</option>
+                  <option value="B+">B+</option><option value="B-">B-</option>
+                  <option value="AB+">AB+</option><option value="AB-">AB-</option>
+                  <option value="O+">O+</option><option value="O-">O-</option>
+                </select>
+              </div>
+
+              <div>
+                <label for="contactoEmergencia" class="mb-2 block text-sm font-semibold text-guinda-dark">Contacto de emergencia</label>
+                <input id="contactoEmergencia" name="contactoEmergencia" type="text" maxlength="150" placeholder="Nombre completo" required
+                  class="w-full rounded-2xl border border-linea bg-marfil/50 px-4 py-3.5 text-sm outline-none transition focus:border-guinda focus:bg-white focus:ring-4 focus:ring-guinda/5">
+              </div>
+
+              <div>
+                <label for="telefonoEmergencia" class="mb-2 block text-sm font-semibold text-guinda-dark">Teléfono de emergencia</label>
+                <input id="telefonoEmergencia" name="telefonoEmergencia" type="tel" inputmode="numeric" maxlength="10" placeholder="10 dígitos" required
+                  class="w-full rounded-2xl border border-linea bg-marfil/50 px-4 py-3.5 text-sm outline-none transition focus:border-guinda focus:bg-white focus:ring-4 focus:ring-guinda/5">
+              </div>
+            </div>
+          </div>
+
+          <!-- PASO 4 -->
+          <div class="form-step hidden p-7 sm:p-9" data-step="4">
+            <div class="rounded-[1.75rem] border border-slate-200 bg-slate-50/80 p-5 shadow-sm sm:p-7">
+              <div class="flex flex-col gap-4 border-b border-slate-200 pb-6 sm:flex-row sm:items-start sm:justify-between">
+                <div class="flex items-start gap-3.5">
+                  <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-guinda/10 text-guinda" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <rect x="4" y="3.5" width="16" height="17" rx="2"></rect>
+                      <path d="M8 8h8M8 12h5M8 16h3"></path>
+                      <path d="m15.5 15.5 1.5 1.5 3-3"></path>
+                    </svg>
+                  </span>
+                  <div>
+                    <p class="text-[10px] font-bold uppercase tracking-[0.16em] text-guinda">Revisión final</p>
+                    <h3 class="mt-1 text-xl font-bold tracking-tight text-slate-900">Confirma que tus datos sean correctos</h3>
+                    <p class="mt-1.5 max-w-2xl text-sm leading-6 text-slate-500">Verifica la información antes de enviarla. Después podrás confirmar tu correo para obtener el folio.</p>
+                  </div>
+                </div>
+              </div>
+              <div id="summary" class="mt-6 space-y-4"></div>
+            </div>
+
+            <div class="mt-7 space-y-4">
+              <section class="rounded-3xl border border-linea bg-marfil/35 p-5">
+                <div class="flex items-start justify-between gap-4">
+                  <div>
+                    <h3 class="text-sm font-bold text-guinda-dark">Aviso de privacidad</h3>
+                    <p class="mt-2 text-sm leading-6 text-texto-soft text-justify">Tus datos serán utilizados para administrar tu registro, comunicarnos contigo y realizar las actividades necesarias para la organización de la carrera.</p>
+                  </div>
+                  <button type="button" data-legal="privacy" class="shrink-0 text-xs font-bold text-guinda hover:underline">Leer más</button>
+                </div>
+                <label class="mt-4 flex cursor-pointer items-start gap-3 rounded-2xl border border-linea bg-white p-4">
+                  <input id="aceptaPrivacidad" name="aceptaPrivacidad" type="checkbox" class="mt-1 h-4 w-4 accent-guinda" required>
+                  <span class="text-sm leading-6 text-texto-soft">He leído y acepto el Aviso de Privacidad.</span>
+                </label>
+              </section>
+
+              <section class="rounded-3xl border border-linea bg-marfil/35 p-5">
+                <div class="flex items-start justify-between gap-4">
+                  <div>
+                    <h3 class="text-sm font-bold text-guinda-dark">Carta de exoneración</h3>
+                    <p class="mt-2 text-sm leading-6 text-texto-soft text-justify">Declaro bajo protesta de decir verdad que participo voluntariamente, que me encuentro en condiciones para realizar la actividad física y que reconozco los riesgos inherentes a la práctica deportiva recreativa.</p>
+                  </div>
+                  <button type="button" data-legal="waiver" class="shrink-0 text-xs font-bold text-guinda hover:underline">Leer más</button>
+                </div>
+                <label class="mt-4 flex cursor-pointer items-start gap-3 rounded-2xl border border-linea bg-white p-4">
+                  <input id="aceptaExoneracion" name="aceptaExoneracion" type="checkbox" class="mt-1 h-4 w-4 accent-guinda" required>
+                  <span class="text-sm leading-6 text-texto-soft">Declaro que he leído y acepto la Carta de Exoneración.</span>
+                </label>
+              </section>
+
+              <section class="rounded-3xl border border-naranja/20 bg-naranja-soft/60 p-5">
+                <div class="flex items-start justify-between gap-4">
+                  <div>
+                    <h3 class="text-sm font-bold text-guinda-dark">Autorización de uso de imagen y voz</h3>
+                    <p class="mt-2 text-sm leading-6 text-texto-soft text-justify">Autorizo de forma voluntaria y gratuita el uso de mi imagen y voz captadas durante el evento para fines institucionales, de difusión y memoria de la carrera.</p>
+                  </div>
+                  <button type="button" data-legal="image" class="shrink-0 text-xs font-bold text-naranja-dark hover:underline">Leer más</button>
+                </div>
+                <label class="mt-4 flex cursor-pointer items-start gap-3 rounded-2xl border border-naranja/15 bg-white/80 p-4">
+                  <input id="autorizaImagen" name="autorizaImagen" type="checkbox" class="mt-1 h-4 w-4 accent-naranja" required>
+                  <span class="text-sm leading-6 text-texto-soft">Autorizo el uso de mi imagen y voz para los fines señalados.</span>
+                </label>
+              </section>
+            </div>
+
+            <div class="mt-6 rounded-2xl border border-guinda/10 bg-guinda/5 p-4">
+              <strong class="block text-sm text-guinda-dark">Tu folio aún no se generará</strong>
+              <p class="mt-1 text-sm leading-6 text-texto-soft">Después de enviar este preregistro recibirás un correo con un enlace seguro. El folio será asignado únicamente cuando confirmes tu correo.</p>
+            </div>
+
+            <% if (turnstileSiteKey) { %>
+              <div class="mt-6 rounded-2xl border border-linea bg-white/70 p-4">
+                <p class="text-xs font-bold uppercase tracking-wider text-guinda-dark">Verificación de seguridad</p>
+                <p class="mt-1 text-sm leading-6 text-texto-soft">Completa esta verificación antes de enviar tu preregistro.</p>
+                <div id="turnstile-container" class="mt-4" data-sitekey="<%= turnstileSiteKey %>"></div>
+              </div>
+            <% } %>
+          </div>
+
+          <div class="flex items-center justify-between gap-4 border-t border-linea bg-marfil/40 px-7 py-5 sm:px-9">
+            <button id="prevButton" type="button" class="invisible rounded-2xl border border-linea bg-white px-5 py-3 text-sm font-semibold text-guinda transition hover:border-guinda/30 hover:bg-guinda/5">← Anterior</button>
+
+            <div class="ml-auto flex items-center gap-3">
+              <span id="mobileStep" class="hidden text-xs text-texto-soft sm:block">Paso 1 de 4</span>
+              <button id="nextButton" type="button" class="rounded-2xl bg-guinda px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-guinda/10 transition hover:-translate-y-0.5 hover:bg-guinda-dark">Continuar →</button>
+              <button
+                id="submitButton"
+                type="submit"
+                class="
+                  hidden
+                  items-center
+                  justify-center
+                  gap-2
+                  rounded-2xl
+                  bg-guinda
+                  px-6
+                  py-3.5
+                  text-sm
+                  font-semibold
+                  text-white
+                  shadow-lg
+                  shadow-guinda/10
+                  transition
+                  hover:bg-guinda-dark
+                  disabled:cursor-not-allowed
+                  disabled:opacity-60
+                "
+              >
+                <span id="submitButtonContent">
+                  Enviar preregistro
+                </span>
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="/js/register.js" defer></script>
+</body>
+</html>

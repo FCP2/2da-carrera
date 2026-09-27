@@ -1,0 +1,36 @@
+{
+  "name": "voces-que-corren",
+  "version": "1.0.0",
+  "description": "Plataforma web para registro y gestión de la carrera Voces que Corren",
+  "main": "src/server.js",
+  "scripts": {
+    "dev": "concurrently \"nodemon src/server.js\" \"npx @tailwindcss/cli -i ./public/css/input.css -o ./public/css/app.css --watch\"",
+    "start": "node src/server.js",
+    "css:build": "npx @tailwindcss/cli -i ./public/css/input.css -o ./public/css/app.css --minify"
+  },
+  "keywords": [
+    "node",
+    "express",
+    "ejs",
+    "tailwind",
+    "postgresql"
+  ],
+  "license": "ISC",
+  "dependencies": {
+    "compression": "^1.7.5",
+    "dotenv": "^16.4.7",
+    "ejs": "^3.1.10",
+    "express": "^5.1.0",
+    "express-rate-limit": "^7.5.0",
+    "helmet": "^8.1.0",
+    "pg": "^8.13.3",
+    "qrcode": "^1.5.4",
+    "resend": "^6.30.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.1.0",
+    "concurrently": "^10.0.5",
+    "nodemon": "^3.1.9",
+    "tailwindcss": "^4.1.0"
+  }
+}
