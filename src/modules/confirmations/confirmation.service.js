@@ -160,6 +160,35 @@ class ConfirmationService {
       }
 
 
+      // Límite independiente por categoría, justo antes de asignar folio.
+      // El evento está bloqueado arriba para serializar confirmaciones concurrentes.
+      const categoryQuota =
+        await confirmationRepository.getCategoryQuota(
+          client,
+          evento.id,
+          confirmation.categoria_competencia
+        );
+
+      if (!categoryQuota) {
+        const error = new Error(
+          'No fue posible validar el cupo de la categoría.'
+        );
+        error.code = 'CATEGORY_QUOTA_NOT_CONFIGURED';
+        throw error;
+      }
+
+      if (Number(categoryQuota.confirmados) >= Number(categoryQuota.capacidad)) {
+        const categoria = confirmation.categoria_competencia === 'femenil'
+          ? 'femenil'
+          : 'varonil';
+        const error = new Error(
+          `El cupo de la categoría ${categoria} ya se encuentra completo.`
+        );
+        error.code = 'CATEGORY_FULL';
+        throw error;
+      }
+
+
       // Obtener último número utilizado
       const highestNumber =
         await confirmationRepository
