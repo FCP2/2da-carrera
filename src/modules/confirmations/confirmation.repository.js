@@ -22,6 +22,7 @@ class ConfirmationRepository {
           p.apellido_paterno,
           p.apellido_materno,
           p.correo,
+          p.categoria_competencia,
 
           e.nombre AS evento_nombre,
           e.fecha_evento,
@@ -85,6 +86,33 @@ class ConfirmationRepository {
     );
 
     return result.rows[0].total;
+  }
+
+
+  async getCategoryQuota(client, eventoId, categoria) {
+    const result = await client.query(
+      `
+        SELECT
+          ce.capacidad,
+          (
+            SELECT COUNT(*)::INTEGER
+            FROM registros r2
+            INNER JOIN participantes p2
+              ON p2.id = r2.participante_id
+            WHERE r2.evento_id = ce.evento_id
+              AND r2.estatus = 'confirmado'
+              AND p2.categoria_competencia = ce.categoria
+          ) AS confirmados
+        FROM cupos_evento ce
+        WHERE ce.evento_id = $1
+          AND ce.categoria = $2
+          AND ce.activo = TRUE
+        LIMIT 1
+      `,
+      [eventoId, categoria]
+    );
+
+    return result.rows[0] || null;
   }
 
 
