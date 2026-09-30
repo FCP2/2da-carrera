@@ -407,6 +407,7 @@ function createSummary() {
       document.getElementById('apellidoMaterno').value
     ].filter(Boolean).join(' '),
     'Fecha de nacimiento': formatDateForSummary(document.getElementById('fechaNacimiento').value),
+    'Menor de edad': document.getElementById('esMenorEdad')?.checked ? 'Sí' : 'No',
     'Categoría de competencia': categoria,
     'Identidad LGBTIQ+': lgbtiq,
     'Procedencia': getResidence(),
@@ -422,7 +423,7 @@ function createSummary() {
   const groups = [
     {
       title: 'Identificación del participante',
-      fields: ['Nombre', 'Fecha de nacimiento', 'CURP']
+      fields: ['Nombre', 'Fecha de nacimiento', 'Menor de edad', 'CURP']
     },
     {
       title: 'Categoría y kit',
@@ -743,6 +744,9 @@ form.addEventListener(
           document.getElementById(
             'fechaNacimiento'
           ).value,
+
+        esMenorEdad:
+          document.getElementById('esMenorEdad')?.checked === true,
 
         categoriaCompetencia,
 
