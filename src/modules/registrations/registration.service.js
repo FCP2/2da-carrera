@@ -157,6 +157,8 @@ class RegistrationService {
 
       const categoriaCompetencia = String(body.categoriaCompetencia || '').trim();
 
+      const esMenorEdad = body.esMenorEdad === true || body.esMenorEdad === 'true';
+
       if (!['femenil', 'varonil'].includes(categoriaCompetencia)) {
         const error = new Error('Selecciona una categoría de competencia válida.');
         error.status = 400;
@@ -251,6 +253,8 @@ class RegistrationService {
 
               fechaNacimiento:
                 body.fechaNacimiento,
+
+              esMenorEdad,
 
               categoriaCompetencia,
 
