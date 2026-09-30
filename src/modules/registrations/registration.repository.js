@@ -71,6 +71,7 @@ class RegistrationRepository {
           apellido_paterno,
           apellido_materno,
           fecha_nacimiento,
+          es_menor_edad,
           categoria_competencia,
           identidad_lgbtiq,
           curp,
@@ -85,7 +86,7 @@ class RegistrationRepository {
           telefono_emergencia
         )
         VALUES (
-          $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16
+          $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17
         )
         RETURNING *
       `,
@@ -94,6 +95,7 @@ class RegistrationRepository {
         data.apellidoPaterno,
         data.apellidoMaterno,
         data.fechaNacimiento,
+        data.esMenorEdad,
         data.categoriaCompetencia,
         data.identidadLgbtiq || null,
         data.curp || null,
