@@ -82,6 +82,31 @@ curp?.addEventListener('input', () => {
   curp.value = curp.value.replace(/[^A-Z0-9]/gi, '').toUpperCase().slice(0, 18);
 });
 
+document.getElementById('esMenorEdad')?.addEventListener('change', async (event) => {
+  if (!event.target.checked) return;
+
+  await Swal.fire({
+    icon: 'warning',
+    iconHtml: `
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path d="M12 3.25 2.85 19a1.5 1.5 0 0 0 1.3 2.25h15.7a1.5 1.5 0 0 0 1.3-2.25L12 3.25Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+        <path d="M12 9v4.5M12 17.25v.1" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+      </svg>
+    `,
+    title: 'Participante menor de edad',
+    html: '<strong>¡Recordatorio para la entrega de kits!</strong><br><br>Lleva contigo la <strong>CURP del menor</strong> y la <strong>carta de exoneración</strong> firmada y requisitada que emite el sistema al registrarte.',
+    confirmButtonText: 'Entendido',
+    allowOutsideClick: false,
+    allowEscapeKey: false,
+    buttonsStyling: false,
+    customClass: {
+      popup: 'voces-warning-modal',
+      icon: 'voces-warning-icon',
+      confirmButton: 'voces-modal-confirm'
+    }
+  });
+});
+
 document.querySelectorAll('input[name="esEdomex"]').forEach(radio => {
   radio.addEventListener('change', () => {
     const isEdomex = radio.value === 'true' && radio.checked;
@@ -493,6 +518,109 @@ function escapeHtml(value) {
   element.textContent = String(value ?? '');
   return element.innerHTML;
 }
+
+async function openResendPanel() {
+  const result = await Swal.fire({
+    icon: 'info',
+    iconHtml: `
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path d="M4.5 6.75h15v10.5h-15z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+        <path d="m5 7.25 7 5.25 7-5.25" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+      </svg>
+    `,
+    title: 'Reenviar confirmación',
+    html: `
+      <p style="text-align:left;line-height:1.6;color:#6B6265;margin:0 0 14px">
+        Escribe el correo con el que realizaste tu preregistro. Te enviaremos un nuevo enlace si todavía tienes reenvíos disponibles.
+      </p>
+      <input id="resendEmailInput" class="swal2-input" type="email" placeholder="nombre@correo.com" autocomplete="email" style="width:calc(100% - 2em);margin:0">
+      <p style="text-align:left;line-height:1.55;color:#6B6265;font-size:12px;margin:12px 0 0">
+        Revisa también spam, no deseados o promociones. Si usas iPhone, pasa el mensaje a la bandeja principal y marca “No es spam”.
+      </p>
+    `,
+    confirmButtonText: 'Reenviar confirmación',
+    showCancelButton: true,
+    cancelButtonText: 'Entendido',
+    footer: 'Máximo 3 reenvíos por preregistro',
+    buttonsStyling: false,
+    customClass: {
+      popup: 'voces-duplicate-modal',
+      icon: 'voces-duplicate-icon',
+      confirmButton: 'voces-modal-confirm',
+      cancelButton: 'voces-modal-cancel'
+    },
+    preConfirm: () => {
+      const email = String(document.getElementById('resendEmailInput')?.value || '').trim().toLowerCase();
+      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        Swal.showValidationMessage('Escribe un correo electrónico válido.');
+        return false;
+      }
+      return email;
+    }
+  });
+
+  if (!result.isConfirmed) return;
+
+  try {
+    const resendResponse = await fetch('/registro/reenviar-confirmacion', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ correo: result.value })
+    });
+    const resendResult = await resendResponse.json();
+
+    if (!resendResponse.ok) {
+      throw new Error(resendResult.message || 'No fue posible reenviar la confirmación.');
+    }
+
+    const remaining = Number(resendResult.data?.reenviosRestantes ?? 0);
+    const successMessage = remaining === 0
+      ? 'Generamos el último enlace disponible. <strong>No quedan reenvíos adicionales.</strong>'
+      : `Generamos un nuevo enlace. Te quedan <strong>${remaining}</strong> reenvío(s).`;
+
+    await Swal.fire({
+      icon: 'success',
+      iconHtml: `
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.8"/>
+          <path d="m8 12.2 2.6 2.6 5.4-5.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      `,
+      title: 'Confirmación reenviada',
+      html: `<p class="voces-success-message">${successMessage}</p><div class="voces-spam-note" role="note"><div class="voces-spam-note-title"><strong>Revisa tu bandeja de correo</strong></div><p>Busca también en <strong>spam, no deseados o promociones</strong>.</p></div>`,
+      confirmButtonText: 'Entendido',
+      buttonsStyling: false,
+      customClass: {
+        popup: 'voces-success-modal',
+        icon: 'voces-success-icon',
+        confirmButton: 'voces-modal-confirm voces-success-confirm'
+      }
+    });
+  } catch (error) {
+    await Swal.fire({
+      icon: 'error',
+      iconHtml: `
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.8"/>
+          <path d="M12 8.5v4.25M12 16.25v.1" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+      `,
+      title: 'No se pudo reenviar',
+      html: `<p class="voces-error-message">${escapeHtml(error.message || 'No fue posible reenviar la confirmación.')}</p>`,
+      confirmButtonText: 'Entendido',
+      buttonsStyling: false,
+      customClass: {
+        popup: 'voces-error-modal',
+        icon: 'voces-error-icon',
+        confirmButton: 'voces-modal-confirm voces-error-confirm'
+      }
+    });
+  }
+}
+
+document.querySelectorAll('.resend-link').forEach((link) => {
+  link.addEventListener('click', openResendPanel);
+});
 
 const legalContent = {
     privacy: {
