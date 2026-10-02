@@ -10,6 +10,39 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/css/app.css">
+  <style>
+    [role="note"],
+    [role="alert"] {
+      color: #ffffff;
+    }
+    [role="note"] p,
+    [role="alert"] p,
+    [role="note"] p strong,
+    [role="alert"] p strong {
+      color: #ffffff !important;
+    }
+    [role="note"] p,
+    [role="alert"] p,
+    #esMenorEdad + span > span,
+    fieldset p {
+      text-align: justify;
+      text-justify: inter-word;
+    }
+    .resend-link {
+      display: inline-block;
+      padding: 0.2rem 0.5rem;
+      border-radius: 0.5rem;
+      background: #ffffff;
+      color: #681d3a !important;
+      font-weight: 500 !important;
+      text-decoration: underline;
+      text-decoration-thickness: 2px;
+      text-underline-offset: 2px;
+    }
+    .resend-link:hover {
+      background: #efe5d6;
+    }
+  </style>
   <% if (turnstileSiteKey) { %>
     <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" defer></script>
   <% } %>
@@ -133,7 +166,7 @@
           <!-- PASO 1 -->
           <div class="form-step p-7 sm:p-9" data-step="1">
             <div class="grid gap-6 md:grid-cols-2">
-              <div class="md:col-span-2 flex items-start gap-3 rounded-2xl border p-4" style="border-color:#e6c55e;background:#fff8d8" role="note">
+              <div class="md:col-span-2 flex items-start gap-3 rounded-2xl border p-4" style="border-color:#8c2641;background:#681d3a" role="note">
                 <span class="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-guinda text-xs font-bold text-white">1</span>
                 <div><p class="text-xs font-bold uppercase tracking-[0.12em] text-guinda">Paso 1 · Importante para continuar</p><p class="mt-1 text-sm leading-6 text-texto-soft">Al finalizar el preregistro enviaremos un enlace a tu correo. <strong class="text-guinda-dark">Revisa también spam, no deseados o promociones</strong> para confirmar tu inscripción y obtener tu folio.</p><p class="mt-2 rounded-xl bg-white/70 px-3 py-2 text-xs font-bold leading-5 text-guinda-dark">¿Ya te registraste? No vuelvas a llenar el formulario: revisa nuevamente tu correo o <button type="button" class="resend-link font-extrabold text-guinda underline decoration-2 underline-offset-2 hover:text-guinda-dark">solicita un reenvío</button>.</p></div>
               </div>
@@ -178,9 +211,9 @@
               <div class="md:col-span-2">
                 <label class="flex cursor-pointer items-start gap-3 rounded-2xl border border-linea bg-marfil/35 p-4 transition hover:border-guinda/30 hover:bg-white">
                   <input id="esMenorEdad" name="esMenorEdad" type="checkbox" class="mt-0.5 h-4 w-4 rounded accent-guinda">
-                  <span>
+                <span>
                     <span class="block text-sm font-semibold text-guinda-dark">La persona participante es menor de edad</span>
-                    <span class="mt-1 block text-xs leading-5 text-texto-soft">Activa esta opción si tiene menos de 18 años. Esta información se usará para identificar el registro y gestionar los requisitos correspondientes.</span>
+                    <span class="mt-1 block text-justify text-xs leading-5 text-texto-soft">Activa esta opción si tiene menos de 18 años. Esta información se usará para identificar el registro y gestionar los requisitos correspondientes.</span>
                   </span>
                 </label>
               </div>
@@ -256,7 +289,7 @@
           <!-- PASO 2 -->
           <div class="form-step hidden p-7 sm:p-9" data-step="2">
             <div class="grid gap-6 md:grid-cols-2">
-              <div class="md:col-span-2 flex items-start gap-3 rounded-2xl border p-4" style="border-color:#e6c55e;background:#fff8d8" role="note">
+              <div class="md:col-span-2 flex items-start gap-3 rounded-2xl border p-4" style="border-color:#8c2641;background:#681d3a" role="note">
                 <span class="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-guinda text-xs font-bold text-white">2</span>
                 <div><p class="text-xs font-bold uppercase tracking-[0.12em] text-guinda">Paso 2 · Procedencia y contacto</p><p class="mt-1 text-sm leading-6 text-texto-soft">Escribe un correo que revises con frecuencia. Después de enviar el formulario, busca el mensaje también en <strong class="text-guinda-dark">spam, no deseados o promociones</strong>.</p><p class="mt-2 rounded-xl bg-white/70 px-3 py-2 text-xs font-bold leading-5 text-guinda-dark">¿Ya te registraste? No vuelvas a llenar el formulario: revisa nuevamente tu correo o <button type="button" class="resend-link font-extrabold text-guinda underline decoration-2 underline-offset-2 hover:text-guinda-dark">solicita un reenvío</button>.</p></div>
               </div>
@@ -364,7 +397,7 @@
           <!-- PASO 3 -->
           <div class="form-step hidden p-7 sm:p-9" data-step="3">
             <div class="grid gap-6 md:grid-cols-2">
-              <div class="md:col-span-2 flex items-start gap-3 rounded-2xl border p-4" style="border-color:#e6c55e;background:#fff8d8" role="note">
+              <div class="md:col-span-2 flex items-start gap-3 rounded-2xl border p-4" style="border-color:#8c2641;background:#681d3a" role="note">
                 <span class="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-guinda text-xs font-bold text-white">3</span>
                 <div><p class="text-xs font-bold uppercase tracking-[0.12em] text-guinda">Paso 3 · Recuerda tu confirmación</p><p class="mt-1 text-sm leading-6 text-texto-soft">Cuando envíes el preregistro, revisa tu correo y sus carpetas de <strong class="text-guinda-dark">spam, no deseados o promociones</strong>. Debes abrir el enlace para confirmar la inscripción y recibir el folio.</p><p class="mt-2 rounded-xl bg-white/70 px-3 py-2 text-xs font-bold leading-5 text-guinda-dark">¿Ya te registraste? No vuelvas a llenar el formulario: revisa nuevamente tu correo o <button type="button" class="resend-link font-extrabold text-guinda underline decoration-2 underline-offset-2 hover:text-guinda-dark">solicita un reenvío</button>.</p></div>
               </div>
@@ -410,7 +443,7 @@
 
           <!-- PASO 4 -->
           <div class="form-step hidden p-7 sm:p-9" data-step="4">
-            <div class="mb-6 flex items-start gap-3 rounded-2xl border p-4" style="border-color:#e6c55e;background:#fff8d8" role="alert">
+            <div class="mb-6 flex items-start gap-3 rounded-2xl border p-4" style="border-color:#8c2641;background:#681d3a" role="alert">
               <span class="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-guinda text-xs font-bold text-white">4</span>
               <div><p class="text-xs font-bold uppercase tracking-[0.12em] text-guinda-dark">Paso 4 · Antes de enviar</p><p class="mt-1 text-sm leading-6 text-texto-soft"><strong class="text-guinda-dark">Después de enviar, revisa tu bandeja principal y también spam, no deseados o promociones.</strong> En iPhone, si el mensaje llega a spam, pásalo primero a la bandeja principal y marca “No es spam” para que el botón de confirmación funcione. Sin confirmar el correo no se genera folio.</p><p class="mt-2 rounded-xl bg-white/80 px-3 py-2 text-xs font-bold leading-5 text-guinda-dark">¿Ya te registraste? No vuelvas a llenar el formulario: revisa nuevamente tu correo o <button type="button" class="resend-link font-extrabold text-guinda underline decoration-2 underline-offset-2 hover:text-guinda-dark">solicita un reenvío</button>.</p></div>
             </div>
