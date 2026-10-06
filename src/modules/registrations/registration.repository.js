@@ -25,6 +25,7 @@ class RegistrationRepository {
         FROM registros
         WHERE evento_id = $1
         AND estatus = 'confirmado'
+        AND folio IS NOT NULL
       `,
       [eventoId]
     );
