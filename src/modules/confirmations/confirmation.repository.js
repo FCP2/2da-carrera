@@ -81,6 +81,7 @@ class ConfirmationRepository {
         FROM registros
         WHERE evento_id = $1
         AND estatus = 'confirmado'
+        AND folio IS NOT NULL
       `,
       [eventoId]
     );
@@ -101,6 +102,7 @@ class ConfirmationRepository {
               ON p2.id = r2.participante_id
             WHERE r2.evento_id = ce.evento_id
               AND r2.estatus = 'confirmado'
+              AND r2.folio IS NOT NULL
               AND p2.categoria_competencia = ce.categoria
           ) AS confirmados
         FROM cupos_evento ce
