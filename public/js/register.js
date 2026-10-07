@@ -17,6 +17,38 @@ const municipioId = document.getElementById('municipioId');
 const estadoForaneo = document.getElementById('estadoForaneo');
 const ciudadForanea = document.getElementById('ciudadForanea');
 
+const correoInput = document.getElementById('correo');
+const correoConfirmacionInput = document.getElementById('correoConfirmacion');
+
+function normalizeEmail(value) {
+  return String(value || '').trim().toLowerCase();
+}
+
+function validateEmailConfirmation() {
+  if (!correoInput || !correoConfirmacionInput) return true;
+
+  const correo = normalizeEmail(correoInput.value);
+  const confirmacion = normalizeEmail(correoConfirmacionInput.value);
+
+  if (!confirmacion) {
+    correoConfirmacionInput.setCustomValidity('Confirma tu correo electrónico.');
+    return false;
+  }
+
+  if (correo !== confirmacion) {
+    correoConfirmacionInput.setCustomValidity('Los correos electrónicos no coinciden.');
+    return false;
+  }
+
+  correoConfirmacionInput.setCustomValidity('');
+  return true;
+}
+
+[correoInput, correoConfirmacionInput].forEach((field) => {
+  field?.addEventListener('input', validateEmailConfirmation);
+  field?.addEventListener('blur', validateEmailConfirmation);
+});
+
 const municipioSelect =
   document.getElementById('municipioId');
 
@@ -354,6 +386,30 @@ async function validateCurrentStep() {
 
     const maternal = await handleMissingSurname(document.getElementById('apellidoMaterno'), 'Apellido materno');
     if (!maternal) return false;
+  }
+
+  if (currentStep === 2 && !validateEmailConfirmation()) {
+    correoConfirmacionInput?.classList.add('border-red-500', 'ring-4', 'ring-red-100');
+    await Swal.fire({
+      icon: 'warning',
+      iconHtml: `
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path d="M12 3.25 2.85 19a1.5 1.5 0 0 0 1.3 2.25h15.7a1.5 1.5 0 0 0 1.3-2.25L12 3.25Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+          <path d="M12 9v4.5M12 17.25v.1" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+      `,
+      title: 'Verifica tu correo',
+      text: 'Escribe el mismo correo en ambos campos para recibir correctamente el enlace de confirmación.',
+      confirmButtonText: 'Entendido',
+      buttonsStyling: false,
+      customClass: {
+        popup: 'voces-warning-modal',
+        icon: 'voces-warning-icon',
+        confirmButton: 'voces-modal-confirm'
+      }
+    });
+    correoConfirmacionInput?.focus();
+    return false;
   }
 
   const currentContainer = document.querySelector(`.form-step[data-step="${currentStep}"]`);
@@ -907,6 +963,11 @@ form.addEventListener(
         correo:
           document.getElementById(
             'correo'
+          ).value,
+
+        correoConfirmacion:
+          document.getElementById(
+            'correoConfirmacion'
           ).value,
 
         telefono:
