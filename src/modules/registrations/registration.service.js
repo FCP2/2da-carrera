@@ -112,6 +112,11 @@ class RegistrationService {
           .trim()
           .toLowerCase();
 
+      const correoConfirmacion =
+        String(body.correoConfirmacion || '')
+          .trim()
+          .toLowerCase();
+
 
       const telefono =
         String(body.telefono || '')
@@ -127,6 +132,24 @@ class RegistrationService {
         throw new Error(
           'El correo electrónico es obligatorio.'
         );
+      }
+
+      if (!correoConfirmacion) {
+        const error = new Error(
+          'Confirma tu correo electrónico para continuar.'
+        );
+        error.status = 400;
+        error.code = 'EMAIL_CONFIRMATION_REQUIRED';
+        throw error;
+      }
+
+      if (correo !== correoConfirmacion) {
+        const error = new Error(
+          'Los correos electrónicos no coinciden.'
+        );
+        error.status = 400;
+        error.code = 'EMAIL_MISMATCH';
+        throw error;
       }
 
 
