@@ -55,25 +55,33 @@ class EmailService {
             </p>
 
             <p>
-              Para completar tu inscripción,
-              confirma tu correo electrónico.
+              Para completar tu inscripción, pulsa el botón dorado y confirma tu correo electrónico.
             </p>
 
-            <p style="margin:30px 0;">
+            <p style="margin:30px 0;text-align:center;">
               <a
                 href="${confirmationUrl}"
                 style="
                   display:inline-block;
-                  background:#6F1D3A;
-                  color:#ffffff;
-                  padding:14px 24px;
-                  border-radius:12px;
+                  background:#D6A545;
+                  border:2px solid #B78327;
+                  color:#46132A;
+                  padding:17px 30px;
+                  border-radius:10px;
                   text-decoration:none;
-                  font-weight:bold;
+                  font-size:16px;
+                  font-weight:700;
+                  line-height:1.2;
                 "
               >
-                Confirmar inscripción
+                CONFIRMAR MI INSCRIPCIÓN
               </a>
+            </p>
+
+            <p style="color:#6B6265;font-size:13px;line-height:1.55;">
+              Si el botón no funciona, abre directamente este enlace:
+              <br>
+              <a href="${confirmationUrl}" style="color:#681D3B;word-break:break-all;">${confirmationUrl}</a>
             </p>
 
             <p style="
