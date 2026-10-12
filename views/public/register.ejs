@@ -8,7 +8,8 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.3.1/css/all.min.css">
   <link rel="stylesheet" href="/css/app.css">
   <style>
     [role="note"],
@@ -41,6 +42,45 @@
     }
     .resend-link:hover {
       background: #efe5d6;
+    }
+    .route-distance-count {
+      display: none;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.25rem 0.75rem 0.25rem 0.25rem;
+      border: 1px solid rgba(255, 255, 255, 0.24);
+      border-radius: 999px;
+      background: rgba(19, 15, 26, 0.35);
+      box-shadow: inset 0 1px rgba(255, 255, 255, 0.12);
+      color: #fff;
+      white-space: nowrap;
+    }
+    .route-distance-count__number {
+      display: grid;
+      width: 1.75rem;
+      height: 1.75rem;
+      place-items: center;
+      border-radius: 50%;
+      background: linear-gradient(145deg, #f8c7db, #e88db5);
+      color: #53192f;
+      font-size: 0.875rem;
+      font-weight: 800;
+      font-variant-numeric: tabular-nums;
+      line-height: 1;
+    }
+    .route-distance-count__unit {
+      color: rgba(255, 255, 255, 0.84);
+      font-size: 0.625rem;
+      font-weight: 800;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+    @media (min-width: 640px) {
+      .route-distance-count { display: inline-flex; }
+    }
+    .turnstile-panel { width: 100%; }
+    @media (min-width: 768px) {
+      .turnstile-panel { max-width: 390px; }
     }
   </style>
   <% if (turnstileSiteKey) { %>
@@ -130,6 +170,14 @@
             <span class="block text-[10px] font-bold uppercase tracking-[0.12em] text-white/80">Soporte por WhatsApp</span>
           </span>
         </a>
+        <button
+          type="button"
+          onclick="document.getElementById('modalRuta').classList.remove('hidden'); window.setTimeout(() => document.querySelector('#modalRuta iframe')?.contentWindow.postMessage({ type: 'resize-map' }, '*'), 140)"
+          class="mt-3 flex w-fit items-center gap-2.5 rounded-xl border border-guinda/25 bg-white/70 px-4 py-2.5 text-sm font-semibold text-guinda-dark shadow-sm transition hover:border-guinda/45 hover:bg-white focus:outline-none focus:ring-4 focus:ring-guinda/15"
+        >
+          <i class="fa-solid fa-route text-guinda" aria-hidden="true"></i>
+          <span>Ver ruta de 5 km</span>
+        </button>
         <p class="mt-4 text-justify text-sm leading-6 text-texto-soft">
           Completa únicamente la información necesaria. Al finalizar te enviaremos un correo para confirmar tu inscripción y posteriormente asignarte un folio.
         </p>
@@ -164,6 +212,60 @@
             <p id="stepLabel" class="text-xs font-bold uppercase tracking-[0.15em] text-dorado">Paso 1 de 4</p>
             <h2 id="stepTitle" class="mt-2 text-2xl font-bold tracking-tight text-guinda-dark">Datos personales</h2>
           </div>
+            <!-- MODAL -->
+            <div
+              id="modalRuta"
+              class="fixed inset-0 z-50 hidden
+                    flex items-center justify-center
+                    bg-slate-950/75 p-3 backdrop-blur-sm sm:p-6"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="modalRutaTitulo"
+              onclick="if (event.target === this) this.classList.add('hidden')"
+            >
+
+              <div class="relative flex h-[min(88vh,780px)] w-full max-w-5xl max-h-[88vh]
+                          flex-col overflow-hidden rounded-[1.5rem] bg-[#151924] shadow-2xl
+                          shadow-black/40 ring-1 ring-white/20"
+                   style="height:min(88vh,780px)">
+
+                <header class="flex shrink-0 items-center gap-3 border-b border-white/10 bg-gradient-to-r from-[#17151e] via-[#2a1928] to-[#4e2039] px-4 py-3 text-white sm:px-6">
+                  <span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-white/15 text-white shadow-inner shadow-white/10 ring-1 ring-white/25" aria-hidden="true">
+                    <i class="fa-solid fa-map-location-dot text-xl"></i>
+                  </span>
+                  <div class="min-w-0 flex-1">
+                    <p class="text-[10px] font-bold uppercase tracking-[0.18em] text-white/65">Ruta del evento</p>
+                    <h2 id="modalRutaTitulo" class="truncate text-base font-extrabold tracking-tight sm:text-lg">Recorrido oficial de 5 km</h2>
+                  </div>
+                  <span class="route-distance-count" aria-label="Distancia de la ruta: 5 kilómetros">
+                    <span class="route-distance-count__number" aria-hidden="true">5</span>
+                    <span class="route-distance-count__unit" aria-hidden="true">km</span>
+                  </span>
+                  <button type="button" onclick="document.getElementById('modalRuta').classList.add('hidden')" class="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-white/10 text-white/80 ring-1 ring-white/20 transition hover:bg-white/20 hover:text-white focus:outline-none focus:ring-2 focus:ring-white/70" aria-label="Cerrar mapa de la ruta">
+                    <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m7 7 10 10M17 7 7 17"/></svg>
+                  </button>
+                </header>
+
+                <!-- MAPA LEAFLET -->
+                <div class="min-h-0 min-w-0 flex-1">
+                  <iframe
+                    src="/mapas/ruta-5k.html?embed=1"
+                    class="h-full w-full border-0"
+                    title="Ruta de la carrera Voces que Corren"
+                    loading="lazy"
+                  ></iframe>
+                </div>
+
+                <footer class="flex shrink-0 items-center justify-center gap-2 border-t border-white/10 bg-[#171b26] px-4 py-2.5 text-center text-[11px] font-medium text-slate-300">
+                  <svg viewBox="0 0 24 24" class="h-4 w-4 text-[#f28ab8]" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M8 5 4 9l4 4M16 19l4-4-4-4M5 19l14-14"/>
+                  </svg>
+                  <span>Arrastra para explorar · rueda para zoom · botón derecho o Shift + rueda para girar</span>
+                </footer>
+
+              </div>
+
+            </div>
           <div
             class="hidden min-w-[9.5rem] rounded-2xl border border-dorado-soft/50 bg-gradient-to-br from-white/90 via-white/70 to-dorado-pale/60 px-4 py-2.5 shadow-sm shadow-dorado/15 backdrop-blur-xl sm:block"
             aria-label="Cupo total del evento"
@@ -539,7 +641,7 @@
             </div>
 
             <% if (turnstileSiteKey) { %>
-              <div class="mt-6 rounded-2xl border border-linea bg-white/70 p-4">
+              <div class="turnstile-panel mt-6 rounded-2xl border border-linea bg-white/70 p-4">
                 <p class="text-xs font-bold uppercase tracking-wider text-guinda-dark">Verificación de seguridad</p>
                 <p class="mt-1 text-sm leading-6 text-texto-soft">Completa esta verificación antes de enviar tu preregistro.</p>
                 <div id="turnstile-container" class="mt-4" data-sitekey="<%= turnstileSiteKey %>"></div>
@@ -591,3 +693,6 @@
   <script src="/js/register.js" defer></script>
 </body>
 </html>
+
+
+
