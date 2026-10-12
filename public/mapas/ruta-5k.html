@@ -1,0 +1,217 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Voces que Corren · Mapa de la ruta</title><link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.3.1/css/all.min.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tomickigrzegorz/leaflet-rotate@0.3.0/dist/leaflet-rotate.css">
+<style>
+.vqc-route{--wine:#811740;--magenta:#bb266f;--rose:#fcebf3;--ink:#232b48;--blue:#1957a6;--amber:#ef8527;font-family:Montserrat,Arial,sans-serif;color:var(--ink);width:100%;max-width:1140px;margin:24px auto;padding:0 12px;line-height:1.55}
+.vqc-route *{box-sizing:border-box}.vqc-route button,.vqc-route input{font:inherit}.vqc-shell{background:white;border:1px solid #eddae3;border-radius:24px;overflow:hidden;box-shadow:0 14px 45px #50153213}
+.vqc-hero{padding:24px 30px;display:flex;align-items:center;justify-content:space-between;gap:20px;background:linear-gradient(112deg,#741538 0%,#94164a 54%,#b72874 100%);color:white;position:relative;isolation:isolate}
+.vqc-hero:after{content:"";position:absolute;width:280px;height:280px;border:50px solid #ffffff0a;border-radius:50%;right:140px;top:-180px;z-index:-1}
+.vqc-eyebrow{display:flex;align-items:center;gap:9px;font-size:10px;font-weight:800;letter-spacing:1.7px;text-transform:uppercase;opacity:.94}
+.vqc-route h2{font-weight:900;line-height:1.16;font-size:clamp(23px,3vw,34px);letter-spacing:-1px;margin:9px 0 9px;color:white}.vqc-hero p{font-size:12px;font-weight:600;opacity:.94;margin:0;line-height:1.7}
+.vqc-distance{flex-shrink:0;text-align:center;background:#ffffff24;border:1px solid #ffffff4a;border-radius:16px;padding:12px 18px;min-width:130px}.vqc-distance small{display:block;font-size:10px;letter-spacing:.9px;font-weight:800;text-transform:uppercase}.vqc-distance strong{display:block;font-size:25px;font-weight:900;line-height:1.35}
+.vqc-toolbar{padding:12px 20px;display:flex;gap:12px;flex-wrap:wrap;align-items:center;justify-content:space-between;background:#fffafc;border-bottom:1px solid #efdfeb}
+.vqc-toggles{display:flex;gap:8px;flex-wrap:wrap}.vqc-switch{position:relative;display:inline-flex;align-items:center;gap:7px;padding:9px 12px;border:1px solid #e9d8e1;border-radius:999px;background:white;color:#573a4e;font-size:11px;font-weight:800;cursor:pointer;transition:.15s;min-height:38px;user-select:none}
+.vqc-switch:has(input:checked){background:#f7e6ee;border-color:#e2b9ce;color:#841943}.vqc-switch input{position:absolute;opacity:0;width:1px;height:1px}.vqc-switch:focus-within{outline:3px solid #cb9db7;outline-offset:2px}.vqc-switch i{width:15px;text-align:center;font-size:13px;flex:none}.vqc-recenter{border:0;border-radius:11px;background:#841740;color:white;padding:11px 15px;font-weight:800;font-size:11px;cursor:pointer;min-height:40px;display:inline-flex;gap:8px;align-items:center;box-shadow:0 3px 8px #84174020}.vqc-recenter:hover{background:#a3215b}.vqc-recenter i{font-size:15px}
+.vqc-mapframe{position:relative;background:#eef2f2}.vqc-map{height:565px;width:100%;z-index:1}.vqc-mapframe .leaflet-container{font-family:Montserrat,Arial,sans-serif;background:#e8ebec}.vqc-mapframe .leaflet-control-zoom{border:0;box-shadow:0 4px 17px #25304326;margin:16px}.vqc-mapframe .leaflet-control-zoom a{width:36px;height:36px;line-height:36px;color:#7c1a42;font-size:22px;border-color:#f5eaf0}.vqc-mapframe .leaflet-control-rotate{margin:16px;border:0;border-radius:12px;overflow:hidden;box-shadow:0 4px 17px #25304326}.vqc-mapframe .leaflet-control-rotate a{width:36px;height:36px;line-height:36px;background:#fff;color:#7c1a42;border:0}.vqc-mapframe .leaflet-control-attribution{font-size:9px;background:#fffd}.vqc-mapframe .leaflet-popup-content-wrapper{border-radius:13px;box-shadow:0 9px 22px #18232d24}.vqc-mapframe .leaflet-popup-content{font-size:12px;line-height:1.6}
+.vqc-maplabel{position:absolute;z-index:450;pointer-events:none;left:16px;top:16px;display:flex;flex-direction:column;gap:7px}.vqc-maplabel span{display:block;max-width:225px;background:#ffffffeb;padding:8px 11px;border:1px solid #ffffff;border-radius:9px;color:#30405c;box-shadow:0 3px 16px #1a2b3a16;font-size:10px;font-weight:800}.vqc-maplabel i{margin-right:4px;color:var(--wine)}.vqc-maplabel span:nth-child(2) i{color:#2679bd}.vqc-maplabel b{color:var(--wine)}
+.vqc-map .vqc-divicon{background:transparent;border:0}.vqc-pin{width:31px;height:31px;border:2px solid white;border-radius:50%;box-shadow:0 4px 14px #20305066,0 0 0 3px #ffffff66;display:grid;place-items:center;background:linear-gradient(145deg,#3479d1,#174783);color:white}.vqc-pin i{font-size:14px;line-height:1}.vqc-pin--start{background:linear-gradient(145deg,#f2a04b,#d85e18)}.vqc-pin--finish{background:linear-gradient(145deg,#c64b82,#7a173e)}.vqc-pin--finish i{font-size:13px}.vqc-pin--hydration{width:31px;height:31px;background:linear-gradient(145deg,#4a9fe4,#15508e)}
+.vqc-kmpin{width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:50%;border:2px solid white;background:linear-gradient(145deg,#a62d63,#74163e);color:white;font-weight:900;font-size:9px;box-shadow:0 3px 11px #29334345,0 0 0 2px #a62d6380;letter-spacing:-.7px}
+.vqc-arrowwrap{width:24px;height:24px;display:grid;place-items:center;filter:drop-shadow(0 2px 2px #2d27426e)}.vqc-arrowwrap i{font-size:16px;color:#7a173e;-webkit-text-stroke:2px white;paint-order:stroke fill}
+.vqc-bottom{display:flex;gap:18px 32px;align-items:center;flex-wrap:wrap;padding:19px 25px 13px;background:white}.vqc-legitem{display:flex;align-items:center;gap:9px;font-weight:700;font-size:11px}.vqc-legicon{width:24px;height:24px;display:grid;place-items:center;flex:none}.vqc-legicon i{font-size:13px}.vqc-lineicon{width:33px;height:7px;background:#b31c62;border:2px solid white;box-shadow:0 0 0 1px #c32a72;border-radius:9px}.vqc-legicon.blue{background:#1956aa;border-radius:50%;color:white}.vqc-legicon.orange{background:#ed7b23;border-radius:50%;color:white}.vqc-legicon.pink{background:#a62d63;border-radius:50%;color:white}.vqc-disclaimer{padding:0 25px 20px;color:#725b69;font-size:10px;line-height:1.8;margin:0}.vqc-disclaimer strong{color:#71405c}
+@media(max-width:680px){.vqc-route{padding:0 6px;margin:14px auto}.vqc-shell{border-radius:17px}.vqc-hero{padding:20px 18px;align-items:flex-start;gap:9px}.vqc-eyebrow{font-size:9px;letter-spacing:.7px}.vqc-route h2{font-size:22px}.vqc-hero p{font-size:10px}.vqc-distance{min-width:90px;padding:9px 8px;border-radius:12px}.vqc-distance strong{font-size:18px}.vqc-distance small{font-size:8px}.vqc-toolbar{padding:10px;gap:10px}.vqc-switch{font-size:10px;padding:8px 10px}.vqc-map{height:480px}.vqc-maplabel{left:9px;top:9px}.vqc-maplabel span{max-width:175px;font-size:9px}.vqc-bottom{padding:16px 15px 10px;gap:13px 20px}.vqc-disclaimer{padding:0 15px 17px}}
+@media(max-width:375px){.vqc-hero{flex-wrap:wrap}.vqc-distance{display:flex;gap:10px;align-items:center;width:100%;justify-content:center}.vqc-map{height:450px}}
+
+/* Presentación compacta cuando la ruta se abre dentro del formulario. */
+.vqc-route.vqc-embed{max-width:none;margin:0;padding:0}
+.map-embed-html,.map-embed-body{height:100%;overflow:hidden}
+.vqc-route.vqc-embed{height:100%}
+.vqc-route.vqc-embed .vqc-shell{height:100%;display:flex;flex-direction:column;border:0;border-radius:0;box-shadow:none}
+.vqc-route.vqc-embed .vqc-hero{display:none}
+.vqc-route.vqc-embed .vqc-toolbar{padding:8px 14px}
+.vqc-route.vqc-embed .vqc-mapframe{flex:1;min-height:0}
+.vqc-route.vqc-embed .vqc-map{height:100%}
+.vqc-route.vqc-embed .vqc-signage{top:10px;right:10px;width:154px}
+.vqc-route.vqc-embed .vqc-signage-head{padding:7px 9px}
+.vqc-route.vqc-embed .vqc-signage-head h3{font-size:9px}
+.vqc-route.vqc-embed .vqc-signage-body .vqc-legitem{font-size:8px;padding:3px 0}
+.vqc-route.vqc-embed .vqc-bottom,
+.vqc-route.vqc-embed .vqc-disclaimer{display:none}
+@media(max-width:680px){.vqc-route.vqc-embed .vqc-toolbar{padding:7px 9px}.vqc-route.vqc-embed .vqc-signage{width:132px;right:7px;top:7px}.vqc-route.vqc-embed .vqc-signage-body .vqc-legitem{font-size:7px}}
+
+/* Leyenda flotante compacta sobre el mapa (Montserrat). */
+.vqc-route .vqc-signage{position:absolute;z-index:500;top:16px;right:16px;width:191px;max-width:calc(100% - 32px);margin:0;background:#fff;border-radius:13px;border:1px solid #ead9e0;overflow:hidden;box-shadow:0 8px 24px #291c3240;font-family:Montserrat,Arial,sans-serif;pointer-events:auto}
+.vqc-route .vqc-signage-head{background:#82183f;color:white;display:flex;align-items:center;gap:8px;padding:10px 12px}
+.vqc-route .vqc-signage-head-icon{display:grid;place-items:center;flex:none;width:23px;height:23px;background:#ffffff24;border-radius:6px}
+.vqc-route .vqc-signage-head-icon i{font-size:13px}
+.vqc-route .vqc-signage-head h3{color:white;font-family:Montserrat,Arial,sans-serif;font-weight:800;font-size:11px;letter-spacing:1px;line-height:1.5;margin:0}
+.vqc-route .vqc-signage-head p{display:none}
+.vqc-route .vqc-signage-body{display:flex;flex-direction:column;gap:0;padding:6px 10px}
+.vqc-route .vqc-signage-body .vqc-legitem{display:flex;align-items:center;min-width:0;gap:8px;padding:5px 0;color:#171717;font-family:Montserrat,Arial,sans-serif;font-size:9px;font-weight:600;line-height:1.45}
+.vqc-route .vqc-signage-body .vqc-legitem + .vqc-legitem{border-top:1px solid #f4edf0}
+.vqc-route .vqc-signage-symbol{width:22px;height:22px;display:grid;place-items:center;flex:none;border-radius:6px;background:#faf0f4}
+.vqc-route .vqc-signage-symbol > i{font-size:14px;color:var(--wine)}
+.vqc-route .vqc-signage-symbol .vqc-legicon{width:20px;height:20px}
+.vqc-route .vqc-signage-symbol .vqc-legicon i{font-size:12px}
+.vqc-route .vqc-signage-symbol .vqc-lineicon{width:18px;height:6px}
+.vqc-route .vqc-kmpin-legend{position:static;width:20px;height:20px;font-size:7px;letter-spacing:-.4px;border-width:2px}
+.vqc-route .vqc-disclaimer{padding:14px 23px 20px;line-height:1.85}
+@media(max-width:680px){.vqc-route .vqc-signage{top:9px;right:9px;width:146px;max-width:calc(100% - 18px);border-radius:11px}.vqc-route .vqc-signage-head{padding:8px 9px}.vqc-route .vqc-signage-head-icon{width:19px;height:19px}.vqc-route .vqc-signage-head h3{font-size:9px;letter-spacing:.5px}.vqc-route .vqc-signage-body{padding:4px 7px}.vqc-route .vqc-signage-body .vqc-legitem{font-size:8px;gap:5px;padding:3px 0;line-height:1.4}.vqc-route .vqc-signage-symbol{width:21px;height:21px}.vqc-maplabel{top:auto;bottom:12px}.vqc-route .vqc-disclaimer{padding:13px 15px 17px}}
+
+/* Interfaz oscura del mapa: controles claros y paneles de cristal sobre el recorrido. */
+:root{color-scheme:dark}
+body{background:#10131b!important}
+.vqc-route{--wine:#e9579a;--ink:#f5edf2;color:#f5edf2}
+.vqc-shell{background:#151924;border-color:#36303e;box-shadow:0 24px 65px #08071154}
+.vqc-hero{background:linear-gradient(112deg,#1d1823 0%,#371a30 57%,#54203d 100%);border-bottom:1px solid #ffffff16}
+.vqc-distance{background:#ffffff0d;border-color:#ffffff27}
+.vqc-toolbar,.vqc-route.vqc-embed .vqc-toolbar{background:linear-gradient(180deg,#1e202c,#171a25);border-bottom:1px solid #ffffff1c;padding:10px 16px;gap:12px}
+.vqc-toggles{display:inline-flex;flex-wrap:wrap;gap:4px;align-items:center;padding:4px;border:1px solid #ffffff19;border-radius:15px;background:#0c0f17;box-shadow:inset 0 1px 3px #0005}
+.vqc-switch{min-height:35px;padding:8px 12px;border:1px solid transparent;border-radius:11px;background:transparent;color:#aeb0be;font-size:11px;font-weight:700;letter-spacing:.01em;box-shadow:none;transition:background .18s,border-color .18s,color .18s,box-shadow .18s}
+.vqc-switch:hover{background:#ffffff0c;color:#fff}
+.vqc-switch:has(input:checked){background:linear-gradient(145deg,#662340,#872951);border-color:#f1a5c345;color:#fff;box-shadow:0 2px 8px #0004,inset 0 1px #ffffff1b}
+.vqc-switch:has(input:checked) i{color:#ffd5e5}
+.vqc-switch:focus-within{outline:2px solid #f094bf;outline-offset:2px}
+.vqc-switch i{font-size:12px}
+.vqc-recenter{min-height:38px;padding:9px 13px;border:1px solid #ffffff2d;border-radius:11px;background:#ffffff10;color:#f7eff3;font-size:11px;font-weight:700;box-shadow:none;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);transition:background .18s,border-color .18s}
+.vqc-recenter:hover{background:#ffffff1e;border-color:#ffffff52}
+.vqc-recenter:focus-visible{outline:2px solid #f094bf;outline-offset:2px}
+.vqc-mapframe,.vqc-mapframe .leaflet-container{background:#141b27}
+.vqc-mapframe .leaflet-tile-pane{filter:invert(1) hue-rotate(180deg) contrast(.72) brightness(1.12) saturate(.65)}
+.vqc-mapframe .leaflet-control-zoom,.vqc-mapframe .leaflet-control-rotate{border:1px solid #ffffff38;border-radius:11px;overflow:hidden;box-shadow:0 8px 24px #04091666;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+.vqc-mapframe .leaflet-control-zoom a,.vqc-mapframe .leaflet-control-rotate a{background:#151b26d9;color:#fff;border-color:#ffffff22}
+.vqc-mapframe .leaflet-control-zoom a:hover,.vqc-mapframe .leaflet-control-rotate a:hover{background:#4a2340;color:#fff}
+.vqc-mapframe .leaflet-control-attribution{background:#101722db;color:#c3c8d5}.vqc-mapframe .leaflet-control-attribution a{color:#f6a6cb}
+.vqc-mapframe .leaflet-popup-content-wrapper,.vqc-mapframe .leaflet-popup-tip{background:#1e2430;color:#f5edf2;border:1px solid #ffffff24}
+.vqc-mapframe .leaflet-popup-content-wrapper{box-shadow:0 12px 30px #0008}
+.vqc-mapframe .leaflet-popup-close-button{color:#d6cfda}
+.vqc-maplabel{gap:0;max-width:225px;padding:5px 11px;background:#151c29c9;border:1px solid #ffffff33;border-radius:12px;box-shadow:0 12px 32px #03081566;backdrop-filter:blur(16px) saturate(130%);-webkit-backdrop-filter:blur(16px) saturate(130%)}
+.vqc-maplabel span{max-width:none;padding:7px 0;background:none;border:0;border-radius:0;color:#f6f2f6;box-shadow:none;font-size:10px;font-weight:650;line-height:1.5}
+.vqc-maplabel span+span{border-top:1px solid #ffffff26}
+.vqc-maplabel i,.vqc-maplabel span:nth-child(2) i{width:15px;margin-right:6px;text-align:center;color:#ff80ba}
+.vqc-maplabel b{color:#ffb9d7}
+.vqc-route .vqc-signage,.vqc-route.vqc-embed .vqc-signage{background:#151c2bd4;border:1px solid #ffffff35;border-radius:13px;box-shadow:0 14px 35px #02071472;backdrop-filter:blur(16px) saturate(130%);-webkit-backdrop-filter:blur(16px) saturate(130%)}
+.vqc-route .vqc-signage-head{background:#ffffff0c;border-bottom:1px solid #ffffff24;padding:10px 12px}
+.vqc-route .vqc-signage-head-icon{background:#b5366a42;color:#ffb2d1}
+.vqc-route .vqc-signage-head h3{color:#fff;font-weight:800}
+.vqc-route .vqc-signage-body{padding:5px 10px}
+.vqc-route .vqc-signage-body .vqc-legitem{color:#e8e5ed;font-weight:600}
+.vqc-route .vqc-signage-body .vqc-legitem+.vqc-legitem{border-color:#ffffff1d}
+.vqc-route .vqc-signage-symbol{background:#ffffff10}
+.vqc-route .vqc-signage-symbol>i{color:#ff96c1}
+.vqc-pin{box-shadow:0 5px 16px #0008,0 0 0 3px #ffffff50}
+.vqc-kmpin{background:linear-gradient(145deg,#e64e96,#81274f);box-shadow:0 4px 13px #0009,0 0 0 2px #e64e9680}
+.vqc-arrowwrap i{color:#f04b9a;-webkit-text-stroke:2px #17202d}
+.vqc-bottom{background:#171b26;color:#e8e5ed}
+.vqc-disclaimer,.vqc-route .vqc-disclaimer{color:#b9adbc}.vqc-disclaimer strong{color:#f2c1d8}
+@media(max-width:680px){
+ .vqc-toolbar,.vqc-route.vqc-embed .vqc-toolbar{padding:8px;gap:7px}
+ .vqc-toggles{gap:2px;padding:3px}
+ .vqc-switch{min-height:33px;padding:7px 9px;font-size:9px;gap:5px}
+ .vqc-recenter{min-height:35px;padding:8px 10px;font-size:9px}
+ .vqc-maplabel{top:auto;bottom:11px;left:9px;max-width:170px}
+ .vqc-maplabel span{font-size:9px}
+ .vqc-route .vqc-signage,.vqc-route.vqc-embed .vqc-signage{right:9px;top:9px;width:146px}
+}
+@media(max-width:390px){.vqc-toolbar,.vqc-route.vqc-embed .vqc-toolbar{justify-content:center}.vqc-toggles{width:100%;justify-content:center}.vqc-recenter{width:100%;justify-content:center}}
+</style></head><body style="margin:0;background:#fbf7f9;">
+<section class="vqc-route" aria-label="Mapa interactivo de la ruta de Voces que Corren">
+ <div class="vqc-shell">
+  <header class="vqc-hero"><div><div class="vqc-eyebrow"><i class="fa-solid fa-location-dot" aria-hidden="true"></i> VALLE DE CHALCO · ESTADO DE MÉXICO</div><h2>CONOCE LA RUTA <span style="color:#ffc6e1">5 KM</span></h2><p>Segunda Carrera Atlética «Voces que Corren»<br>Domingo 25 de octubre de 2026 · 9:00 a. m.</p></div><div class="vqc-distance"><small>Recorrido</small><strong>5 km</strong></div></header>
+  <div class="vqc-toolbar" aria-label="Opciones del mapa"><div class="vqc-toggles">
+   <label class="vqc-switch"><input type="checkbox" data-layer="hydration" checked><i class="fa-solid fa-droplet" aria-hidden="true"></i> Hidratación</label>
+   <label class="vqc-switch"><input type="checkbox" data-layer="arrows" checked><i class="fa-solid fa-location-arrow" aria-hidden="true"></i> Dirección</label>
+   <label class="vqc-switch"><input type="checkbox" data-layer="kms" checked><i class="fa-solid fa-ruler-horizontal" aria-hidden="true"></i> Kilómetros</label>
+   </div><button type="button" class="vqc-recenter"><i class="fa-solid fa-expand" aria-hidden="true"></i> Ver toda la ruta</button></div>
+  <div class="vqc-mapframe"><div class="vqc-map" aria-label="Mapa Leaflet con ruta 5 kilómetros, salida, meta y puntos de hidratación"></div><div class="vqc-maplabel"><span><i class="fa-solid fa-location-arrow" aria-hidden="true"></i> Sigue el sentido de las flechas</span><span><i class="fa-solid fa-droplet" aria-hidden="true"></i> 3 puntos de hidratación</span></div>
+  <section class="vqc-signage" aria-labelledby="vqc-signage-title">
+    <header class="vqc-signage-head">
+      <span class="vqc-signage-head-icon" aria-hidden="true"><i class="fa-solid fa-signs-post"></i></span>
+      <div><h3 id="vqc-signage-title">SEÑALIZACIÓN</h3><p>Identifica los elementos del recorrido</p></div>
+    </header>
+    <div class="vqc-signage-body">
+      <div class="vqc-legitem"><span class="vqc-signage-symbol"><span class="vqc-lineicon"></span></span><span>Ruta de la carrera</span></div>
+      <div class="vqc-legitem"><span class="vqc-signage-symbol"><i class="fa-solid fa-location-arrow" aria-hidden="true"></i></span><span>Sentido de la carrera</span></div>
+      <div class="vqc-legitem"><span class="vqc-signage-symbol"><span class="vqc-legicon blue"><i class="fa-solid fa-droplet" aria-hidden="true"></i></span></span><span>Punto de hidratación</span></div>
+      <div class="vqc-legitem"><span class="vqc-signage-symbol"><span class="vqc-legicon orange"><i class="fa-solid fa-flag" aria-hidden="true"></i></span></span><span>Inicio del recorrido</span></div>
+      <div class="vqc-legitem"><span class="vqc-signage-symbol"><span class="vqc-legicon pink"><i class="fa-solid fa-flag-checkered" aria-hidden="true"></i></span></span><span>Final del recorrido</span></div>
+      <div class="vqc-legitem"><span class="vqc-signage-symbol"><span class="vqc-kmpin vqc-kmpin-legend">KM</span></span><span>Señalización kilométrica</span></div>
+    </div>
+  </section>
+  </div>
+ </div>
+</section>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tomickigrzegorz/leaflet-rotate@0.3.0/dist/leaflet-rotate.umd.min.js"></script>
+<script>
+(function(){
+ const root=document.querySelector('.vqc-route:not([data-map-initialized])');if(!root)return;root.dataset.mapInitialized='true';
+ if(new URLSearchParams(window.location.search).has('embed')){root.classList.add('vqc-embed');document.documentElement.classList.add('map-embed-html');document.body.classList.add('map-embed-body');}
+ const pts=[[19.27838936736532,-98.9425000972838],[19.27858894584482,-98.9424712410842],[19.27878705387073,-98.94244828548466],[19.2785798292873,-98.9409216201313],[19.27815351187729,-98.93792640591748],[19.27901468546768,-98.93781020385478],[19.27948837067866,-98.94077473066412],[19.28015977608286,-98.94525760433973],[19.27787858870614,-98.94559350059112],[19.27858167560263,-98.95104214100384],[19.27418213723855,-98.9517641367893],[19.27258734616902,-98.93954869891473],[19.2728545576272,-98.93956252731218],[19.27286978002359,-98.93918073871262],[19.27298627647485,-98.93888543373816],[19.27322083086316,-98.93855965091805],[19.27350805545201,-98.93838108749266],[19.27390217910051,-98.93828026973702],[19.27428514844338,-98.93840365233852],[19.27459868583819,-98.9386461152968],[19.27477614551141,-98.93889559676026],[19.2749333800324,-98.93919564864457],[19.27692404176799,-98.93892367814381],[19.27744813732715,-98.94264157330205],[19.27812763928035,-98.942556804963]];
+ const el=root.querySelector('.vqc-map');
+ if(!window.L){el.innerHTML='<p style="padding:24px">No se pudo cargar Leaflet. Comprueba tu conexión a internet.</p>';return;}
+ const map=L.map(el,{zoomControl:false,scrollWheelZoom:true,dragging:true,touchZoom:true,doubleClickZoom:true,keyboard:true,worldCopyJump:true,rotate:true,bearing:0,dragRotate:true,shiftKeyRotate:true,touchRotate:true,rotateClockwise:true,rotateControl:{position:'bottomleft',behavior:'reset',closeOnZeroBearing:false}});
+ map.setView([19.276,-98.945],14);
+ L.control.zoom({position:'bottomright',zoomInTitle:'Acercar',zoomOutTitle:'Alejar'}).addTo(map);
+ // OSM France ofrece una lectura urbana limpia sin API key.
+ // Si el proveedor no responde, se utiliza el estilo estándar de OpenStreetMap.
+ const osmAttribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>';
+ const standardTiles=L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:osmAttribution});
+ const osmFranceTiles=L.tileLayer('https://{s}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png',{
+  maxZoom:20,subdomains:'abc',attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a> · Renderizado por <a href="https://www.openstreetmap.fr/">OSM France</a>'
+ });
+ let fallbackUsed=false;
+ osmFranceTiles.on('tileerror',()=>{if(!fallbackUsed){fallbackUsed=true;map.removeLayer(osmFranceTiles);standardTiles.addTo(map);}});
+ osmFranceTiles.addTo(map);
+ const shadow=L.polyline(pts,{color:'#38112d',weight:14,opacity:.92,lineJoin:'round',lineCap:'round'}).addTo(map);
+ const routeLine=L.polyline(pts,{color:'#f43f98',weight:8,opacity:1,lineJoin:'round',lineCap:'round'}).addTo(map);
+ routeLine.bringToFront();
+ const bounds=shadow.getBounds().pad(.12);map.fitBounds(bounds,{padding:[25,25]});
+ const cum=[0];for(let i=1;i<pts.length;i++)cum.push(cum[i-1]+map.distance(pts[i-1],pts[i]));const total=cum[cum.length-1];
+ function pointAt(dist){const d=Math.max(0,Math.min(total,dist));let i=1;while(i<cum.length-1&&cum[i]<d)i++;const ratio=(d-cum[i-1])/(cum[i]-cum[i-1]||1);return [pts[i-1][0]+(pts[i][0]-pts[i-1][0])*ratio,pts[i-1][1]+(pts[i][1]-pts[i-1][1])*ratio];}
+ const icon=(html,w=40,h=w,anchor=[w/2,h/2])=>L.divIcon({className:'vqc-divicon',html,iconSize:[w,h],iconAnchor:anchor});
+ const startFlag='<i class="fa-solid fa-flag" aria-hidden="true"></i>';
+ const finishFlag='<i class="fa-solid fa-flag-checkered" aria-hidden="true"></i>';
+ const droplet='<i class="fa-solid fa-droplet" aria-hidden="true"></i>';
+ L.marker(pts[0],{icon:icon('<div class="vqc-pin vqc-pin--start">'+startFlag+'</div>',29)}).addTo(map).bindPopup('<b>Salida</b><br>Inicio del recorrido de 5 km.');
+ L.marker(pts[pts.length-1],{icon:icon('<div class="vqc-pin vqc-pin--finish">'+finishFlag+'</div>',29)}).addTo(map).bindPopup('<b>Meta</b><br>Final del recorrido de 5 km.');
+ const groups={arrows:L.layerGroup().addTo(map),kms:L.layerGroup().addTo(map),hydration:L.layerGroup().addTo(map)};
+ for(let n=1;n<=5;n++)L.marker(n===5?pts[24]:pointAt(n*1000),{icon:icon('<div class="vqc-kmpin">'+n+' km</div>',34)}).bindPopup('<b>Kilómetro '+n+'</b><br>Distancia acumulada aproximada.').addTo(groups.kms);
+ // Flechas discretas ubicadas en tramos representativos para facilitar lectura.
+ [480,1280,2180,3100,4050,4750].filter(d=>d<total-50).forEach(d=>{
+  const at=pointAt(d),from=pointAt(d-28),to=pointAt(d+28);
+  const p1=map.project(from,15),p2=map.project(to,15);
+  const angle=Math.atan2(p2.y-p1.y,p2.x-p1.x)*180/Math.PI;
+  const html='<div class="vqc-arrowwrap" style="transform:rotate('+angle+'deg)"><i class="fa-solid fa-arrow-right" aria-hidden="true"></i></div>';
+  L.marker(at,{icon:icon(html,24),interactive:false,keyboard:false,zIndexOffset:100,rotateWithView:true}).addTo(groups.arrows);
+ });
+ // Puntos inferidos del croquis: NO son georreferencias oficiales.
+ const hydration=[
+  {point:pointAt(5000),name:'Hidratación · zona de Explanada Municipal'},
+  {point:pointAt(1800),name:'Hidratación · zona de Poniente 10'},
+  {point:pts[21],name:'Hidratación · esquina del Deportivo'}
+ ];
+ hydration.forEach((h,i)=>L.marker(h.point,{icon:icon('<div class="vqc-pin vqc-pin--hydration">'+droplet+'</div>',29,29,h.anchor)}).addTo(groups.hydration).bindPopup('<b>Punto de hidratación '+(i===0?3:i)+'</b><br>'+h.name+(i===1?'<br>':'')));
+ root.querySelectorAll('input[data-layer]').forEach(input=>input.addEventListener('change',()=>{const layer=groups[input.dataset.layer];if(!layer)return;input.checked?layer.addTo(map):map.removeLayer(layer);}));
+ function showFullRoute(){
+  if(!el.clientWidth||!el.clientHeight)return;
+  map.invalidateSize({animate:false});
+  map.fitBounds(bounds,{padding:[25,25],animate:false});
+ }
+ root.querySelector('.vqc-recenter').addEventListener('click',()=>{
+  if(typeof map.setBearing==='function')map.setBearing(0);
+  showFullRoute();
+ });
+ let needsInitialFit=true;
+ new ResizeObserver(()=>{
+  if(!el.clientWidth||!el.clientHeight)return;
+  map.invalidateSize({animate:false});
+  if(needsInitialFit){needsInitialFit=false;showFullRoute();}
+ }).observe(el);
+ window.addEventListener('message',(event)=>{
+  if(event.data?.type==='resize-map')requestAnimationFrame(()=>requestAnimationFrame(showFullRoute));
+ });
+})();
+</script></body></html>
