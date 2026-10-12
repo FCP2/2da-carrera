@@ -5,7 +5,7 @@ class RegistrationController {
   showForm(req, res) {
     res.render('public/register', {
       title: 'Registro | Voces que Corren',
-      capacity: 2000,
+      capacity: 4000,
       confirmed: 0,
       turnstileSiteKey: process.env.CARRERA_TURNSTILE_SITE_KEY || ''
     });
