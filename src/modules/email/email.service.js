@@ -38,7 +38,7 @@ class EmailService {
 
         html: `
           <div style="
-            font-family:Arial,sans-serif;
+            font-family:Montserrat,Arial,sans-serif;
             max-width:600px;
             margin:auto;
             padding:30px;
@@ -171,7 +171,7 @@ class EmailService {
       to: [to],
       subject: `Inscripción confirmada | Folio ${folio}`,
       html: `
-        <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;padding:30px;color:#231F20">
+        <div style="font-family:Montserrat,Arial,sans-serif;max-width:600px;margin:auto;padding:30px;color:#231F20">
           <h2 style="color:#6F1D3A">¡Inscripción confirmada!</h2>
           <p>Hola ${safeName}, tu inscripción para <strong>${safeEvento}</strong> quedó confirmada.</p>
           <p style="font-size:20px;font-weight:bold;color:#6F1D3A">Folio: ${safeFolio}</p>
