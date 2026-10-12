@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Inter", sans-serif;
+  --font-sans: "Montserrat", Arial, sans-serif;
 
   /* Identidad institucional */
   --color-guinda: #6F1D3A;
