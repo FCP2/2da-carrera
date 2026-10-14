@@ -32,7 +32,7 @@ class RegistrationController {
 
   async resendConfirmation(req, res, next) {
     try {
-      const result = await registrationService.resendConfirmation(req.body?.correo);
+      const result = await registrationService.resendConfirmation(req.body || {});
 
       if (!result.emailSent) {
         return res.status(502).json({
