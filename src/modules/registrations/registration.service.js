@@ -54,6 +54,28 @@ async function verifyTurnstileToken(token, remoteIp) {
   }
 }
 
+function normalizeFullName(value) {
+  return String(value || '').trim().replace(/\s+/g, ' ').toLocaleLowerCase('es-MX');
+}
+
+function isMinorOnRegistrationDate(dateInput) {
+  const value = String(dateInput || '').trim();
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return null;
+
+  const birth = new Date(`${value}T00:00:00Z`);
+  if (Number.isNaN(birth.getTime()) || birth.toISOString().slice(0, 10) !== value) return null;
+
+  const parts = Object.fromEntries(new Intl.DateTimeFormat('en-US', {
+    timeZone: 'America/Mexico_City', year: 'numeric', month: 'numeric', day: 'numeric'
+  }).formatToParts(new Date()).filter(part => part.type !== 'literal').map(part => [part.type, Number(part.value)]));
+
+  const age = parts.year - birth.getUTCFullYear()
+    - (parts.month < birth.getUTCMonth() + 1
+      || (parts.month === birth.getUTCMonth() + 1 && parts.day < birth.getUTCDate()) ? 1 : 0);
+
+  return age < 0 ? null : age < 18;
+}
+
 class RegistrationService {
 
   async createRegistration(body, remoteIp) {
@@ -181,6 +203,17 @@ class RegistrationService {
       const categoriaCompetencia = String(body.categoriaCompetencia || '').trim();
 
       const esMenorEdad = body.esMenorEdad === true || body.esMenorEdad === 'true';
+      const fechaNacimiento = String(body.fechaNacimiento || '').trim();
+      const edadMenor = isMinorOnRegistrationDate(fechaNacimiento);
+
+      if (edadMenor === null || edadMenor !== esMenorEdad) {
+        const error = new Error(edadMenor === null
+          ? 'Escribe una fecha de nacimiento válida.'
+          : 'Verifica la fecha de nacimiento y la opción de menor de edad.');
+        error.status = 400;
+        error.code = 'MINOR_AGE_MISMATCH';
+        throw error;
+      }
 
       if (!['femenil', 'varonil'].includes(categoriaCompetencia)) {
         const error = new Error('Selecciona una categoría de competencia válida.');
@@ -255,11 +288,32 @@ class RegistrationService {
       }
 
 
-      let participante =
-        await registrationRepository.findParticipantByEmail(
-          client,
-          correo
-        );
+      let participante = esMenorEdad
+        ? await registrationRepository.findMinorParticipantByIdentity(client, {
+            correo, nombres, apellidoPaterno, apellidoMaterno, fechaNacimiento
+          })
+        : await registrationRepository.findAdultParticipantByEmail(client, correo);
+
+      if (!esMenorEdad && participante) {
+        const nombreIngresado = normalizeFullName([nombres, apellidoPaterno, apellidoMaterno].join(' '));
+        const nombreExistente = normalizeFullName([
+          participante.nombres,
+          participante.apellido_paterno ?? participante.apellidoPaterno,
+          participante.apellido_materno ?? participante.apellidoMaterno
+        ].join(' '));
+        const fechaExistente = participante.fecha_nacimiento_text
+          ?? participante.fechaNacimiento
+          ?? (participante.fecha_nacimiento instanceof Date
+            ? participante.fecha_nacimiento.toISOString().slice(0, 10)
+            : participante.fecha_nacimiento);
+
+        if (nombreIngresado !== nombreExistente || fechaNacimiento !== fechaExistente) {
+          const error = new Error('Este correo ya está asociado a otra persona adulta. Usa un correo diferente para este preregistro.');
+          error.status = 409;
+          error.code = 'ADULT_EMAIL_IN_USE';
+          throw error;
+        }
+      }
 
 
       if (!participante) {
@@ -274,8 +328,7 @@ class RegistrationService {
 
               apellidoMaterno,
 
-              fechaNacimiento:
-                body.fechaNacimiento,
+              fechaNacimiento,
 
               esMenorEdad,
 
@@ -327,7 +380,7 @@ class RegistrationService {
       if (existingRegistration) {
 
         const error = new Error(
-          'Ya existe un registro asociado a este correo para el evento.'
+          'Esta persona ya tiene un preregistro para el evento.'
         );
 
         error.status = 409;
@@ -440,6 +493,21 @@ class RegistrationService {
 
       await client.query('ROLLBACK');
 
+      if (error.code === '23505') {
+        const curpDuplicada = error.constraint === 'idx_participantes_curp_unique';
+        const adultEmailDuplicado = error.constraint === 'idx_participantes_email_adultos_unique';
+        const duplicate = new Error(curpDuplicada
+          ? 'Esta CURP ya está asociada a otra persona participante.'
+          : adultEmailDuplicado
+            ? 'Este correo ya está asociado a una persona adulta. Usa un correo diferente para este preregistro.'
+            : 'Esta persona ya tiene un preregistro para el evento.');
+        duplicate.status = 409;
+        duplicate.code = curpDuplicada
+          ? 'CURP_ALREADY_REGISTERED'
+          : adultEmailDuplicado ? 'ADULT_EMAIL_IN_USE' : 'EMAIL_ALREADY_REGISTERED';
+        throw duplicate;
+      }
+
       throw error;
 
     } finally {
@@ -450,7 +518,7 @@ class RegistrationService {
 
   }
 
-  async resendConfirmation(emailInput) {
+  async resendConfirmation(input = {}) {
     const client = await pool.connect();
 
     try {
@@ -461,7 +529,8 @@ class RegistrationService {
         throw new Error('No existe un evento disponible.');
       }
 
-      const correo = String(emailInput || '').trim().toLowerCase();
+      const data = typeof input === 'string' ? { correo: input } : input;
+      const correo = String(data.correo || '').trim().toLowerCase();
       if (!correo) {
         const error = new Error('El correo electrónico es obligatorio.');
         error.status = 400;
@@ -469,22 +538,38 @@ class RegistrationService {
         throw error;
       }
 
-      const participante = await registrationRepository.findParticipantByEmail(client, correo);
-      if (!participante) {
+      const registros = await registrationRepository.findRegistrationsByEmail(client, evento.id, correo);
+      if (registros.length === 0) {
         const error = new Error('No encontramos un preregistro asociado a ese correo.');
         error.status = 404;
         error.code = 'REGISTRATION_NOT_FOUND';
         throw error;
       }
 
-      const registro = await registrationRepository.findRegistrationByParticipant(
-        client,
-        evento.id,
-        participante.id
-      );
+      const nombreCompleto = normalizeFullName(data.nombreCompleto);
+      const fechaNacimiento = String(data.fechaNacimiento || '').trim();
+      if (Boolean(nombreCompleto) !== Boolean(fechaNacimiento)) {
+        const error = new Error('Escribe el nombre completo y la fecha de nacimiento.');
+        error.status = 400;
+        error.code = 'REGISTRATION_IDENTITY_INCOMPLETE';
+        throw error;
+      }
+      if (registros.length > 1 && (!nombreCompleto || !fechaNacimiento)) {
+        const error = new Error('Este correo tiene varios preregistros. Indica el nombre completo y la fecha de nacimiento de la persona participante.');
+        error.status = 409;
+        error.code = 'REGISTRATION_IDENTITY_REQUIRED';
+        throw error;
+      }
+
+      const registro = nombreCompleto || fechaNacimiento
+        ? registros.find(row =>
+            normalizeFullName([row.nombres, row.apellido_paterno, row.apellido_materno].join(' ')) === nombreCompleto
+            && row.fecha_nacimiento === fechaNacimiento
+          )
+        : registros[0];
 
       if (!registro) {
-        const error = new Error('No encontramos un preregistro asociado a ese correo.');
+        const error = new Error('No encontramos un preregistro con esos datos. Revisa el nombre completo y la fecha de nacimiento.');
         error.status = 404;
         error.code = 'REGISTRATION_NOT_FOUND';
         throw error;
@@ -540,7 +625,7 @@ class RegistrationService {
       try {
         await emailService.sendConfirmationEmail({
           to: correo,
-          name: [participante.nombres, participante.apellido_paterno, participante.apellido_materno]
+          name: [registro.nombres, registro.apellido_paterno, registro.apellido_materno]
             .filter(Boolean)
             .join(' '),
           confirmationUrl
