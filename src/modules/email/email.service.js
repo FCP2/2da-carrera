@@ -34,7 +34,7 @@ class EmailService {
         to: [to],
 
         subject:
-          'Confirma tu preregistro | Voces que Corren',
+          `Confirma el preregistro de ${String(name || '').replace(/[\r\n]/g, ' ').trim()} | Voces que Corren`,
 
         html: `
           <div style="
