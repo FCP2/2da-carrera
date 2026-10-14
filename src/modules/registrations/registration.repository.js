@@ -49,18 +49,61 @@ class RegistrationRepository {
   }
 
 
-  async findParticipantByEmail(client, email) {
+  async findAdultParticipantByEmail(client, email) {
     const result = await client.query(
       `
-        SELECT *
+        SELECT *, fecha_nacimiento::text AS fecha_nacimiento_text
         FROM participantes
         WHERE LOWER(correo) = LOWER($1)
+          AND es_menor_edad IS NOT TRUE
         LIMIT 1
       `,
       [email]
     );
 
     return result.rows[0] || null;
+  }
+
+
+  async findMinorParticipantByIdentity(client, data) {
+    const result = await client.query(
+      `
+        SELECT *
+        FROM participantes
+        WHERE es_menor_edad IS TRUE
+          AND LOWER(correo) = LOWER($1)
+          AND LOWER(nombres) = LOWER($2)
+          AND LOWER(apellido_paterno) = LOWER($3)
+          AND LOWER(apellido_materno) = LOWER($4)
+          AND fecha_nacimiento = $5::date
+        LIMIT 1
+      `,
+      [data.correo, data.nombres, data.apellidoPaterno, data.apellidoMaterno, data.fechaNacimiento]
+    );
+
+    return result.rows[0] || null;
+  }
+
+
+  async findRegistrationsByEmail(client, eventoId, email) {
+    const result = await client.query(
+      `
+        SELECT
+          r.*,
+          p.nombres,
+          p.apellido_paterno,
+          p.apellido_materno,
+          p.fecha_nacimiento::text AS fecha_nacimiento
+        FROM registros r
+        INNER JOIN participantes p ON p.id = r.participante_id
+        WHERE r.evento_id = $1
+          AND LOWER(p.correo) = LOWER($2)
+        ORDER BY r.id
+      `,
+      [eventoId, email]
+    );
+
+    return result.rows;
   }
 
 
