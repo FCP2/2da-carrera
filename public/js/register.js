@@ -575,7 +575,7 @@ function escapeHtml(value) {
   return element.innerHTML;
 }
 
-async function openResendPanel() {
+async function openResendPanel(initialEmail = '', requireIdentity = false) {
   const result = await Swal.fire({
     icon: 'info',
     iconHtml: `
@@ -589,7 +589,12 @@ async function openResendPanel() {
       <p style="text-align:left;line-height:1.6;color:#6B6265;margin:0 0 14px">
         Escribe el correo con el que realizaste tu preregistro. Te enviaremos un nuevo enlace si todavía tienes reenvíos disponibles.
       </p>
-      <input id="resendEmailInput" class="swal2-input" type="email" placeholder="nombre@correo.com" autocomplete="email" style="width:calc(100% - 2em);margin:0">
+      <input id="resendEmailInput" class="swal2-input" type="email" placeholder="nombre@correo.com" autocomplete="email" value="${escapeHtml(initialEmail)}" style="width:calc(100% - 2em);margin:0">
+      <p style="text-align:left;line-height:1.5;color:#6B6265;font-size:12px;margin:14px 0 6px">
+        ${requireIdentity ? 'Este correo tiene varios preregistros. Identifica a la persona participante:' : 'Si el correo lo usan varias personas, indica el nombre completo y la fecha de nacimiento:'}
+      </p>
+      <input id="resendNameInput" class="swal2-input" type="text" placeholder="Nombre(s) y ambos apellidos" autocomplete="name" style="width:calc(100% - 2em);margin:0 0 8px">
+      <input id="resendBirthInput" class="swal2-input" type="date" aria-label="Fecha de nacimiento" style="width:calc(100% - 2em);margin:0">
       <p style="text-align:left;line-height:1.55;color:#6B6265;font-size:12px;margin:12px 0 0">
         Revisa también spam, no deseados o promociones. Si usas iPhone, pasa el mensaje a la bandeja principal y marca “No es spam”.
       </p>
@@ -607,11 +612,17 @@ async function openResendPanel() {
     },
     preConfirm: () => {
       const email = String(document.getElementById('resendEmailInput')?.value || '').trim().toLowerCase();
+      const nombreCompleto = String(document.getElementById('resendNameInput')?.value || '').trim().replace(/\s+/g, ' ');
+      const fechaNacimiento = String(document.getElementById('resendBirthInput')?.value || '').trim();
       if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
         Swal.showValidationMessage('Escribe un correo electrónico válido.');
         return false;
       }
-      return email;
+      if ((requireIdentity || nombreCompleto || fechaNacimiento) && (!nombreCompleto || !fechaNacimiento)) {
+        Swal.showValidationMessage('Escribe el nombre completo y la fecha de nacimiento.');
+        return false;
+      }
+      return { correo: email, nombreCompleto, fechaNacimiento };
     }
   });
 
@@ -621,11 +632,15 @@ async function openResendPanel() {
     const resendResponse = await fetch('/registro/reenviar-confirmacion', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ correo: result.value })
+      body: JSON.stringify(result.value)
     });
     const resendResult = await resendResponse.json();
 
     if (!resendResponse.ok) {
+      if (resendResult.code === 'REGISTRATION_IDENTITY_REQUIRED') {
+        await openResendPanel(result.value.correo, true);
+        return;
+      }
       throw new Error(resendResult.message || 'No fue posible reenviar la confirmación.');
     }
 
@@ -675,7 +690,7 @@ async function openResendPanel() {
 }
 
 document.querySelectorAll('.resend-link').forEach((link) => {
-  link.addEventListener('click', openResendPanel);
+  link.addEventListener('click', () => openResendPanel());
 });
 
 const legalContent = {
@@ -1047,7 +1062,29 @@ form.addEventListener(
     }
 
 
-    // CORREO YA REGISTRADO
+    if (response.status === 409 && result.code === 'ADULT_EMAIL_IN_USE') {
+      await Swal.fire({
+        icon: 'warning',
+        iconHtml: `
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M12 3.25 2.85 19a1.5 1.5 0 0 0 1.3 2.25h15.7a1.5 1.5 0 0 0 1.3-2.25L12 3.25Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+            <path d="M12 9v4.5M12 17.25v.1" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+        `,
+        title: 'Este correo ya está en uso',
+        html: `<p>El correo <strong>${escapeHtml(payload.correo)}</strong> ya está asociado a una persona adulta. Para registrar a esta persona, escribe un correo diferente.</p>`,
+        confirmButtonText: 'Entendido',
+        buttonsStyling: false,
+        customClass: {
+          popup: 'voces-duplicate-modal',
+          icon: 'voces-duplicate-icon',
+          confirmButton: 'voces-modal-confirm'
+        }
+      });
+      return;
+    }
+
+    // ESTA PERSONA YA TIENE UN PREREGISTRO
     if (
       response.status === 409 &&
       result.code === 'EMAIL_ALREADY_REGISTERED'
@@ -1062,7 +1099,7 @@ form.addEventListener(
           </svg>
         `,
 
-        title: 'Ya tienes un registro activo',
+        title: 'Esta persona ya tiene un registro',
 
         html: `
           <div style="
@@ -1085,11 +1122,11 @@ form.addEventListener(
               color:#6F1D3A;
               word-break:break-word;
             ">
-              ${payload.correo}
+              ${escapeHtml(payload.correo)}
             </span>
 
             <p>
-              ya se encuentra asociado a un preregistro
+              ya tiene un preregistro de <strong>${escapeHtml([payload.nombres, payload.apellidoPaterno, payload.apellidoMaterno].join(' '))}</strong>
               para <strong>Voces que Corren</strong>.
             </p>
 
@@ -1126,12 +1163,22 @@ form.addEventListener(
             headers: {
               'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ correo: payload.correo })
+            body: JSON.stringify(payload.esMenorEdad
+              ? {
+                  correo: payload.correo,
+                  nombreCompleto: [payload.nombres, payload.apellidoPaterno, payload.apellidoMaterno].join(' '),
+                  fechaNacimiento: payload.fechaNacimiento
+                }
+              : { correo: payload.correo })
           });
 
           const resendResult = await resendResponse.json();
 
           if (!resendResponse.ok) {
+            if (resendResult.code === 'REGISTRATION_IDENTITY_REQUIRED') {
+              await openResendPanel(payload.correo, true);
+              return;
+            }
             throw new Error(resendResult.message || 'No fue posible reenviar la confirmación.');
           }
 
