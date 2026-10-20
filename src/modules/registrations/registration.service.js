@@ -78,6 +78,25 @@ function isMinorOnRegistrationDate(dateInput) {
 
 class RegistrationService {
 
+  async getCategoryAvailability() {
+    const client = await pool.connect();
+    try {
+      const evento = await registrationRepository.getActiveEvent(client);
+      if (!evento) return { eventFull: true, categories: {} };
+      const confirmed = await registrationRepository.countConfirmed(client, evento.id);
+      const quotas = await registrationRepository.getCategoryQuotas(client, evento.id);
+      const eventFull = !evento.registros_abiertos || Number(confirmed) >= Number(evento.capacidad);
+      const categories = Object.fromEntries(quotas.map(quota => [quota.categoria, {
+        capacity: Number(quota.capacidad),
+        confirmed: Number(quota.confirmados),
+        full: eventFull || Number(quota.confirmados) >= Number(quota.capacidad)
+      }]));
+      return { eventFull, categories };
+    } finally {
+      client.release();
+    }
+  }
+
   async createRegistration(body, remoteIp) {
 
     const turnstileToken = String(body.turnstileToken || '').trim();
@@ -99,7 +118,7 @@ class RegistrationService {
 
 
       const evento =
-        await registrationRepository.getActiveEvent(client);
+        await registrationRepository.getActiveEvent(client, true);
 
       if (!evento) {
         throw new Error(
@@ -315,6 +334,33 @@ class RegistrationService {
         }
       }
 
+      if (participante) {
+        const existingRegistration = await registrationRepository.findRegistrationByParticipant(
+          client, evento.id, participante.id
+        );
+        if (existingRegistration) {
+          const error = new Error('Esta persona ya tiene un preregistro para el evento.');
+          error.status = 409;
+          error.code = 'EMAIL_ALREADY_REGISTERED';
+          throw error;
+        }
+      }
+
+      const categoryQuotas = await registrationRepository.getCategoryQuotas(client, evento.id);
+      const categoryQuota = categoryQuotas.find(quota => quota.categoria === categoriaCompetencia);
+      if (!categoryQuota) {
+        const error = new Error('No fue posible validar el cupo de la categoría.');
+        error.status = 503;
+        error.code = 'CATEGORY_QUOTA_NOT_CONFIGURED';
+        throw error;
+      }
+      if (Number(categoryQuota.confirmados) >= Number(categoryQuota.capacidad)) {
+        const error = new Error(`El cupo de la categoría ${categoriaCompetencia} ya se encuentra completo. No es posible crear un nuevo preregistro.`);
+        error.status = 409;
+        error.code = 'CATEGORY_FULL';
+        throw error;
+      }
+
 
       if (!participante) {
 
@@ -365,28 +411,6 @@ class RegistrationService {
             }
           );
 
-      }
-
-
-      const existingRegistration =
-        await registrationRepository
-          .findRegistrationByParticipant(
-            client,
-            evento.id,
-            participante.id
-          );
-
-
-      if (existingRegistration) {
-
-        const error = new Error(
-          'Esta persona ya tiene un preregistro para el evento.'
-        );
-
-        error.status = 409;
-        error.code = 'EMAIL_ALREADY_REGISTERED';
-
-        throw error;
       }
 
 
