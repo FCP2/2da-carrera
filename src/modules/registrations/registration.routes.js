@@ -22,6 +22,8 @@ router.get(
   registrationController.showForm.bind(registrationController)
 );
 
+router.get('/cupos', registrationController.categoryAvailability.bind(registrationController));
+
 router.post(
   '/',
   registrationController.create.bind(registrationController)
