@@ -79,6 +79,62 @@ const titles = {
   4: 'Consentimientos'
 };
 
+async function refreshCategoryAvailability() {
+  try {
+    const response = await fetch('/registro/cupos', { cache: 'no-store' });
+    if (!response.ok) throw new Error('No fue posible consultar los cupos.');
+    const availability = await response.json();
+
+    for (const category of ['femenil', 'varonil']) {
+      const radio = document.querySelector(`input[name="categoriaCompetencia"][value="${category}"]`);
+      const quota = availability.categories?.[category];
+      const full = !quota || quota.full;
+      if (radio) {
+        radio.disabled = full;
+        if (full) radio.checked = false;
+        radio.closest('label')?.classList.toggle('opacity-60', full);
+        radio.closest('label')?.classList.toggle('cursor-pointer', !full);
+        radio.closest('label')?.classList.toggle('cursor-not-allowed', full);
+      }
+    }
+    return availability;
+  } catch (error) {
+    console.error('No se pudo actualizar el cupo por categoría:', error);
+    return null;
+  }
+}
+
+document.querySelectorAll('input[name="categoriaCompetencia"]').forEach(radio => {
+  radio.closest('label')?.addEventListener('click', async event => {
+    if (!radio.disabled) return;
+    event.preventDefault();
+    await showCategoryFullAlert(radio.value);
+  });
+});
+
+async function showCategoryFullAlert(category) {
+  await Swal.fire({
+    icon: 'warning',
+    iconHtml: `
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path d="M12 3.25 2.85 19a1.5 1.5 0 0 0 1.3 2.25h15.7a1.5 1.5 0 0 0 1.3-2.25L12 3.25Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+        <path d="M12 9v4.5M12 17.25v.1" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+      </svg>
+    `,
+    title: 'Cupo agotado',
+    text: category
+      ? `La categoría ${category} ya completó sus folios. No es posible crear un nuevo preregistro en ella.`
+      : 'No hay una categoría disponible para crear un nuevo preregistro.',
+    confirmButtonText: 'Entendido',
+    buttonsStyling: false,
+    customClass: {
+      popup: 'voces-warning-modal',
+      icon: 'voces-warning-icon',
+      confirmButton: 'voces-modal-confirm'
+    }
+  });
+}
+
 const normalizeName = (value) => value
   .trim()
   .replace(/\s+/g, ' ')
@@ -447,6 +503,19 @@ async function validateCurrentStep() {
       }
     });
     firstInvalid?.focus();
+  }
+
+  if (valid && currentStep === 1) {
+    const selectedCategory = document.querySelector('input[name="categoriaCompetencia"]:checked')?.value;
+    const availability = await refreshCategoryAvailability();
+    if (availability && selectedCategory && (!availability.categories?.[selectedCategory] || availability.categories[selectedCategory].full)) {
+      await showCategoryFullAlert(selectedCategory);
+      return false;
+    }
+    if (availability && !selectedCategory && Object.values(availability.categories || {}).every(quota => quota.full)) {
+      await showCategoryFullAlert();
+      return false;
+    }
   }
 
   return valid;
@@ -1084,6 +1153,13 @@ form.addEventListener(
       return;
     }
 
+    if (response.status === 409 && result.code === 'CATEGORY_FULL') {
+      await refreshCategoryAvailability();
+      await showCategoryFullAlert(payload.categoriaCompetencia);
+      showStep(1);
+      return;
+    }
+
     // ESTA PERSONA YA TIENE UN PREREGISTRO
     if (
       response.status === 409 &&
@@ -1356,4 +1432,5 @@ form.addEventListener(
 
 
 loadMunicipios();
+refreshCategoryAvailability();
 showStep(1);
