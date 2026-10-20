@@ -2,6 +2,14 @@ const registrationService = require('./registration.service');
 
 class RegistrationController {
 
+  async categoryAvailability(req, res, next) {
+    try {
+      res.json(await registrationService.getCategoryAvailability());
+    } catch (error) {
+      next(error);
+    }
+  }
+
   showForm(req, res) {
     res.render('public/register', {
       title: 'Registro | Voces que Corren',
