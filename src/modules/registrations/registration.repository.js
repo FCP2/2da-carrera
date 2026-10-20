@@ -2,7 +2,7 @@ const pool = require('../../config/database');
 
 class RegistrationRepository {
 
-  async getActiveEvent(client) {
+  async getActiveEvent(client, lockForShare = false) {
     const result = await client.query(`
       SELECT
         id,
@@ -12,6 +12,7 @@ class RegistrationRepository {
       FROM eventos
       ORDER BY id DESC
       LIMIT 1
+      ${lockForShare ? 'FOR SHARE' : ''}
     `);
 
     return result.rows[0] || null;
@@ -31,6 +32,26 @@ class RegistrationRepository {
     );
 
     return result.rows[0].total;
+  }
+
+  async getCategoryQuotas(client, eventoId) {
+    const result = await client.query(`
+      SELECT ce.categoria, ce.capacidad,
+        (
+          SELECT COUNT(*)::integer
+          FROM registros r
+          INNER JOIN participantes p ON p.id = r.participante_id
+          WHERE r.evento_id = ce.evento_id
+            AND r.estatus = 'confirmado'
+            AND r.folio IS NOT NULL
+            AND p.categoria_competencia = ce.categoria
+        ) AS confirmados
+      FROM cupos_evento ce
+      WHERE ce.evento_id = $1
+        AND ce.activo = TRUE
+        AND ce.categoria IN ('femenil', 'varonil')
+    `, [eventoId]);
+    return result.rows;
   }
 
 
